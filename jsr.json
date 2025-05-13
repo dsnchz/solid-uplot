@@ -1,5 +1,5 @@
 {
-  "name": "template-solidjs-library",
+  "name": "@dschz/solid-uplot",
   "version": "0.0.0",
   "license": "MIT",
   "exports": "./src/index.tsx",

@@ -1,62 +1,27 @@
-<p>
-  <img width="100%" src="https://assets.solidjs.com/banner?type=Ecosystem&background=tiles&project=library-name" alt="solid-create-script">
+<p align="center">
+  <img src="https://assets.solidjs.com/banner?project=solid-uplot&type=Ecosystem&background=tiles" alt="@dschz/solid-uplot banner" />
 </p>
 
-# Template: SolidJS Library
+# @dschz/solid-uplot
 
-Template for [SolidJS](https://www.solidjs.com/) library package. Bundling of the library is managed by [tsup](https://tsup.egoist.dev/).
+> 💹 SolidJS wrapper for [uPlot](https://github.com/leeoniya/uPlot) — an ultra-fast, small footprint charting library for time-series data.
 
-Other things configured include:
+This is the **official scoped version** of the previously unscoped `uplot-solid` package.  
+It has been rebooted from scratch, starting at `v0.1.0` under the `@dschz` namespace to reflect improvements and future direction.
 
-- Bun (for dependency management and running scripts)
-- TypeScript
-- ESLint / Prettier
-- Solid Testing Library + Vitest (for testing)
-- Playground app using library
-- GitHub Actions (for all CI/CD)
+## ✨ Features
 
-## Getting Started
+- ✅ Fully reactive SolidJS wrapper around uPlot
+- 🔌 Plugin system support
+- 🎯 Fine-grained control over chart lifecycle
+- 💡 Lightweight and fast
+- 💻 TypeScript support out of the box
 
-Some pre-requisites before install dependencies:
-
-- Install Node Version Manager (NVM)
-  ```bash
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-  ```
-- Install Bun
-  ```bash
-  curl -fsSL https://bun.sh/install | bash
-  ```
-
-### Installing Dependencies
+## 📦 Installation
 
 ```bash
-nvm use
-bun install
+npm install solid-js uplot @dschz/solid-uplot
+pnpm install solid-js uplot @dschz/solid-uplot
+yarn install solid-js uplot @dschz/solid-uplot
+bun install solid-js uplot @dschz/solid-uplot
 ```
-
-### Local Development Build
-
-```bash
-bun start
-```
-
-### Linting & Formatting
-
-```bash
-bun run lint    # checks source for lint violations
-bun run format  # checks source for format violations
-
-bun run lint:fix    # fixes lint violations
-bun run format:fix  # fixes format violations
-```
-
-### Contributing
-
-The only requirements when contributing are:
-
-- You keep a clean git history in your branch
-  - rebasing `main` instead of making merge commits.
-- Using proper commit message formats that adhere to [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
-  - Additionally, squashing (via rebase) commits that are not [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
-- CI checks pass before merging into `main`

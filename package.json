@@ -1,17 +1,17 @@
 {
-  "name": "template-solidjs-library",
+  "name": "@dschz/solid-uplot",
   "version": "0.0.0",
-  "description": "Template for SolidJS library using tsup for bundling. Configured with Bun, NVM, TypeScript, ESLint, Prettier, Vitest, and GHA",
+  "description": "SolidJS wrapper for uPlot — ultra-fast, tiny time-series & charting library",
   "type": "module",
-  "author": "Daniel Sanchez <dsanc89@icloud.com>",
+  "author": "Daniel Sanchez <dsanc89@pm.me>",
   "license": "MIT",
-  "homepage": "https://github.com/thedanchez/template-solidjs-library#readme",
+  "homepage": "https://github.com/dsnchz/solid-uplot#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/thedanchez/template-solidjs-library.git"
+    "url": "https://github.com/dsnchz/solid-uplot.git"
   },
   "bugs": {
-    "url": "https://github.com/thedanchez/template-solidjs-library/issues"
+    "url": "https://github.com/dsnchz/solid-uplot/issues"
   },
   "publishConfig": {
     "access": "public"
