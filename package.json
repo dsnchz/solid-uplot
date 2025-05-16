@@ -57,12 +57,14 @@
     "@typescript-eslint/eslint-plugin": "^8.32.0",
     "@typescript-eslint/parser": "^8.32.0",
     "@vitest/coverage-istanbul": "^3.1.3",
+    "canvas": "^3.1.0",
     "eslint": "^9.26.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-solid": "^0.14.5",
     "globals": "^16.1.0",
     "jiti": "^2.4.2",
     "jsdom": "^26.1.0",
+    "path2d": "^0.2.2",
     "prettier": "^3.5.3",
     "solid-js": "^1.9.6",
     "tailwindcss": "^4.1.5",
@@ -70,11 +72,13 @@
     "tsup-preset-solid": "^2.2.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.32.0",
+    "uplot": "^1.6.32",
     "vite": "^6.3.5",
     "vite-plugin-solid": "^2.11.6",
     "vitest": "^3.1.3"
   },
   "peerDependencies": {
-    "solid-js": ">=1.6.0"
+    "solid-js": ">=1.6.0",
+    "uplot": ">=1.6.32"
   }
 }

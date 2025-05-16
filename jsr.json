@@ -4,7 +4,7 @@
   "license": "MIT",
   "exports": "./src/index.tsx",
   "publish": {
-    "include": ["LICENSE", "README.md", "src/**/*.tsx"],
+    "include": ["LICENSE", "README.md", "CHANGELOG.md", "src/**/*.tsx"],
     "exclude": ["**/*.test.tsx"]
   }
 }
