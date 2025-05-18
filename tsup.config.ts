@@ -11,6 +11,18 @@ const generateSolidPresetOptions = (watching: boolean): preset.PresetOptions => 
       dev_entry: false,
       server_entry: false,
     },
+    {
+      name: "plugins",
+      entry: "src/plugins/index.tsx",
+      dev_entry: false,
+      server_entry: false,
+    },
+    {
+      name: "utils",
+      entry: "src/utils/index.ts",
+      dev_entry: false,
+      server_entry: false,
+    },
   ],
   drop_console: !watching, // remove all `console.*` calls and `debugger` statements in prod builds
   cjs: false,

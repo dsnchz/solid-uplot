@@ -1,4 +1,5 @@
 import "@testing-library/jest-dom/vitest";
+import "@wessberg/pointer-events";
 
 import { Path2D } from "path2d";
 import { vi } from "vitest";
