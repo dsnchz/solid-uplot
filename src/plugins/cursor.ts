@@ -1,6 +1,6 @@
 import type uPlot from "uplot";
 
-import type { PluginFactory } from "../createPluginBus";
+import type { UplotPluginFactory } from "../createPluginBus";
 import { type CursorData, getCursorData } from "../utils/getCursorData";
 
 /**
@@ -75,7 +75,7 @@ export type CursorPluginMessageBus = {
  * ];
  * ```
  */
-export const cursor = (): PluginFactory<CursorPluginMessageBus> => {
+export const cursor = (): UplotPluginFactory<CursorPluginMessageBus> => {
   return ({ bus }) => {
     if (!bus) {
       console.warn("[solid-uplot]: A plugin bus is required for the cursor plugin");

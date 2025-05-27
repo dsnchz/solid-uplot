@@ -13,7 +13,7 @@ import {
 } from "solid-js";
 import uPlot from "uplot";
 
-import type { PluginFactory, SolidUplotPluginBus, VoidStruct } from "./createPluginBus";
+import type { SolidUplotPluginBus, UplotPluginFactory, VoidStruct } from "./createPluginBus";
 import { getSeriesData, type SeriesDatum } from "./utils/getSeriesData";
 
 /** Placement options for children components relative to the chart */
@@ -25,7 +25,9 @@ type ChildrenPlacement = "top" | "bottom";
  *
  * @template T - The type of the plugin bus data structure
  */
-export type SolidUplotPlugin<T extends VoidStruct = VoidStruct> = uPlot.Plugin | PluginFactory<T>;
+export type SolidUplotPlugin<T extends VoidStruct = VoidStruct> =
+  | uPlot.Plugin
+  | UplotPluginFactory<T>;
 
 /**
  * Configuration options for the SolidUplot component, extending uPlot.Options

@@ -1,6 +1,6 @@
 import { createEffect, createRoot } from "solid-js";
 
-import type { PluginFactory } from "../createPluginBus";
+import type { UplotPluginFactory } from "../createPluginBus";
 import type { CursorPluginMessageBus } from "./cursor";
 
 const DEFAULT_UNFOCUSED_ALPHA = 0.1 as const;
@@ -198,7 +198,7 @@ const seriesFocusRedraw = (u: uPlot, options: SeriesFocusRedrawOptions = {}) => 
  */
 export const focusSeries = (
   options: FocusSeriesPluginOptions = {},
-): PluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus> => {
+): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus> => {
   return ({ bus }) => {
     if (!bus) {
       console.warn("[solid-uplot]: A plugin bus is required for the focusSeries plugin");

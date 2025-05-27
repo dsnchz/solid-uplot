@@ -2,7 +2,7 @@ import { type Component, type JSX, mergeProps, Show, splitProps } from "solid-js
 import { render } from "solid-js/web";
 import uPlot from "uplot";
 
-import type { PluginFactory } from "../createPluginBus";
+import type { UplotPluginFactory } from "../createPluginBus";
 import type { CursorData } from "../utils/getCursorData";
 import { getSeriesData, type SeriesDatum } from "../utils/getSeriesData";
 import type { CursorPluginMessageBus } from "./cursor";
@@ -224,7 +224,7 @@ export type TooltipPluginOptions = TooltipRootProps & TooltipConfigOptions;
 export const tooltip = (
   Component: Component<TooltipProps>,
   options: TooltipPluginOptions = {},
-): PluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus> => {
+): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus> => {
   return ({ bus }) => {
     if (!bus) {
       console.warn("[solid-uplot]: A plugin bus is required for the tooltip plugin");

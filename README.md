@@ -42,7 +42,11 @@ Core components and plugin system:
 
 ```tsx
 import { SolidUplot, createPluginBus } from "@dschz/solid-uplot";
-import type { PluginFactory, SolidUplotPluginBus } from "@dschz/solid-uplot";
+import type {
+  SolidUplotPluginBus,
+  UplotPluginFactory,
+  UplotPluginFactoryContext,
+} from "@dschz/solid-uplot";
 ```
 
 ### `@dschz/solid-uplot/plugins`
@@ -376,7 +380,7 @@ const MyChart = () => {
 The plugin system is open to extension. When authoring plugins for public consumption, follow this pattern:
 
 ```tsx
-import type { PluginFactory } from "@dschz/solid-uplot";
+import type { UplotPluginFactory } from "@dschz/solid-uplot";
 import type { CursorPluginMessageBus } from "@dschz/solid-uplot/plugins";
 
 // 1. Define your plugin's message type
@@ -393,7 +397,7 @@ export type MyPluginMessageBus = {
 // 3. Export your plugin factory
 export const myPlugin = (
   options = {},
-): PluginFactory<CursorPluginMessageBus & MyPluginMessageBus> => {
+): UplotPluginFactory<CursorPluginMessageBus & MyPluginMessageBus> => {
   return ({ bus }) => {
     if (!bus) {
       console.warn("[my-plugin]: A plugin bus is required");
@@ -457,73 +461,67 @@ const MyDashboard = () => {
 ### SolidUplot Component
 
 ```tsx
-type SolidUplotProps<T extends VoidStruct = VoidStruct> = {
-  // Chart data (required)
-  data: uPlot.AlignedData;
+// Main component props (extends all uPlot.Options except plugins, width, height)
+type SolidUplotProps<T extends VoidStruct = VoidStruct> = SolidUplotOptions<T> & {
+  // Ref callback to access the chart container element
+  ref?: (el: HTMLDivElement) => void;
 
+  // Callback fired when the uPlot instance is created
+  onCreate?: (u: uPlot, meta: { seriesData: SeriesDatum[] }) => void;
+
+  // Whether to reset scales when chart data is updated (default: true)
+  resetScales?: boolean;
+
+  // CSS styles for the chart container (position is managed internally)
+  style?: Omit<JSX.CSSProperties, "position">;
+
+  // Where to place children components relative to the chart (default: "top")
+  childrenPlacement?: "top" | "bottom";
+
+  // Enable automatic resizing to fit container (default: false)
+  autoResize?: boolean;
+};
+
+// Configuration options extending uPlot.Options with SolidJS enhancements
+type SolidUplotOptions<T extends VoidStruct = VoidStruct> = Omit<
+  uPlot.Options,
+  "plugins" | "width" | "height"
+> & {
   // Chart dimensions
   width?: number; // default: 600
   height?: number; // default: 300
 
-  // Responsive sizing
-  autoResize?: boolean; // default: false
-
   // Plugin configuration
   plugins?: SolidUplotPlugin<T>[];
   pluginBus?: SolidUplotPluginBus<T>;
-
-  // Chart options (all uPlot.Options except plugins, width, height)
-  series?: uPlot.Series[];
-  scales?: uPlot.Scales;
-  axes?: uPlot.Axis[];
-  // ... other uPlot options
-
-  // Chart behavior
-  resetScales?: boolean; // default: true
-
-  // Callbacks
-  onCreate?: (u: uPlot, meta: { seriesData: SeriesDatum[] }) => void;
-
-  // Container styling
-  style?: JSX.CSSProperties;
-  class?: string;
-  id?: string;
-  ref?: (el: HTMLDivElement) => void;
-
-  // Children placement
-  childrenPlacement?: "top" | "bottom"; // default: "top"
 };
+
+// Plugin type (can be standard uPlot plugin or factory function)
+type SolidUplotPlugin<T extends VoidStruct = VoidStruct> = uPlot.Plugin | UplotPluginFactory<T>;
 ```
 
 ### Plugin Bus
 
 ```tsx
-type SolidUplotPluginBus<T extends VoidStruct = VoidStruct> = {
-  data: T;
-  setData: <K extends keyof T>(key: K, value: T[K]) => void;
-  setData: <K extends keyof T, P extends keyof T[K]>(
-    key: K,
-    path: P,
-    value: T[K][P]
-  ) => void;
-};
+// Plugin bus type (derived from createPluginBus return type)
+type SolidUplotPluginBus<T extends VoidStruct = VoidStruct> = ReturnType<typeof createPluginBus<T>>;
 
 // Create a plugin bus
-const createPluginBus = <T extends VoidStruct = VoidStruct>(
-  initialData?: Partial<T>
-): SolidUplotPluginBus<T>;
+const createPluginBus: <T extends VoidStruct = VoidStruct>(
+  initialData?: T,
+) => SolidUplotPluginBus<T>;
 ```
 
 ### Built-in Plugin Options
 
 ```tsx
 // Cursor Plugin
-const cursor = (): PluginFactory<CursorPluginMessageBus>;
+const cursor = (): UplotPluginFactory<CursorPluginMessageBus>;
 
 // Focus Series Plugin
 const focusSeries = (options?: {
   pxThreshold?: number; // default: 15
-}): PluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus>;
+}): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus>;
 
 // Tooltip Plugin
 const tooltip = (
@@ -535,7 +533,7 @@ const tooltip = (
     style?: JSX.CSSProperties;
     zIndex?: number; // default: 20
   }
-): PluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus>;
+): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus>;
 
 // Legend Plugin
 const legend = (
@@ -548,7 +546,7 @@ const legend = (
     style?: JSX.CSSProperties;
     zIndex?: number; // default: 10
   }
-): PluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus>;
+): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus>;
 ```
 
 ## 📚 Examples

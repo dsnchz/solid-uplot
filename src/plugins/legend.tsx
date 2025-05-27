@@ -2,7 +2,7 @@ import { type Component, type JSX, mergeProps, splitProps } from "solid-js";
 import { render } from "solid-js/web";
 import uPlot from "uplot";
 
-import type { PluginFactory, SolidUplotPluginBus } from "../createPluginBus";
+import type { UplotPluginFactory, SolidUplotPluginBus } from "../createPluginBus";
 import { getSeriesData, type SeriesDatum } from "../utils/getSeriesData";
 import type { CursorPluginMessageBus } from "./cursor";
 import type { FocusSeriesPluginMessageBus } from "./focusSeries";
@@ -84,7 +84,7 @@ type LegendPluginOptions = LegendRootProps & LegendConfigOptions;
 export const legend = (
   Component: Component<LegendProps>,
   options: LegendPluginOptions = {},
-): PluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus> => {
+): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus> => {
   return ({ bus }) => {
     if (!bus) {
       console.warn("[solid-uplot]: A plugin bus is required for the Legend plugin");
