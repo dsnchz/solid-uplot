@@ -12,6 +12,13 @@ import type { FocusSeriesPluginMessageBus } from "./focusSeries";
  */
 export type LegendPlacement = "top-left" | "top-right";
 
+/**
+ * Props passed to the custom legend SolidJS component.
+ *
+ * The legend plugin automatically provides these props to your custom component, ensuring it always
+ * receives the latest series data from the chart via the plugin bus system. This creates a reactive
+ * data flow where series data changes immediately trigger legend updates with fresh data information.
+ */
 export type LegendProps = {
   readonly u: uPlot;
   readonly seriesData: SeriesDatum[];

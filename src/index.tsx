@@ -1,2 +1,2 @@
-export { createPluginBus, type SolidUplotPluginBus, type VoidStruct } from "./createPluginBus";
+export { createPluginBus } from "./createPluginBus";
 export { SolidUplot } from "./SolidUplot";

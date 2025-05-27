@@ -16,34 +16,66 @@ import uPlot from "uplot";
 import type { PluginFactory, SolidUplotPluginBus, VoidStruct } from "./createPluginBus";
 import { getSeriesData, type SeriesDatum } from "./utils/getSeriesData";
 
+/** Placement options for children components relative to the chart */
 type ChildrenPlacement = "top" | "bottom";
 
+/**
+ * A SolidJS-compatible uPlot plugin that can be either a standard uPlot plugin
+ * or a factory function that creates a plugin with access to the plugin bus
+ *
+ * @template T - The type of the plugin bus data structure
+ */
 export type SolidUplotPlugin<T extends VoidStruct = VoidStruct> = uPlot.Plugin | PluginFactory<T>;
 
+/**
+ * Configuration options for the SolidUplot component, extending uPlot.Options
+ * with SolidJS-specific enhancements
+ *
+ * @template T - The type of the plugin bus data structure
+ */
 export type SolidUplotOptions<T extends VoidStruct = VoidStruct> = Omit<
   uPlot.Options,
   "plugins" | "width" | "height"
 > & {
+  /** Chart width in pixels */
   readonly width?: number;
+  /** Chart height in pixels */
   readonly height?: number;
+  /** Plugin communication bus for coordinating between plugins */
   readonly pluginBus?: SolidUplotPluginBus<T>;
+  /** Array of plugins to apply to the chart */
   readonly plugins?: SolidUplotPlugin<T>[];
 };
 
+/**
+ * Metadata provided to the onCreate callback when the chart is initialized
+ */
 type OnCreateMeta = {
+  /** Array of series data extracted from the chart configuration */
   readonly seriesData: SeriesDatum[];
 };
 
+/**
+ * Props for the SolidUplot component
+ *
+ * @template T - The type of the plugin bus data structure
+ */
 type SolidUplotProps<T extends VoidStruct = VoidStruct> = SolidUplotOptions<T> & {
-  /** The ref of the uPlot instance */
+  /** Ref callback to access the chart container element */
   readonly ref?: (el: HTMLDivElement) => void;
-  /** Callback when uPlot instance is created */
+  /** Callback fired when the uPlot instance is created */
   readonly onCreate?: (u: uPlot, meta: OnCreateMeta) => void;
-  /** Apply scale reset on redraw triggered by updated plot data (default: `true`) */
+  /**
+   * Whether to reset scales when chart data is updated
+   * @default true
+   */
   readonly resetScales?: boolean;
-  /** The style of the uPlot instance container */
+  /** CSS styles for the chart container (position is managed internally) */
   readonly style?: Omit<JSX.CSSProperties, "position">;
-  /** The placement of the children container. Defaults to "top" */
+  /**
+   * Where to place children components relative to the chart
+   * @default "top"
+   */
   readonly childrenPlacement?: ChildrenPlacement;
   /**
    * Enable automatic resizing to fit container.
@@ -58,6 +90,35 @@ type SolidUplotProps<T extends VoidStruct = VoidStruct> = SolidUplotOptions<T> &
   readonly autoResize?: boolean;
 };
 
+/**
+ * A SolidJS wrapper component for uPlot charts with enhanced features
+ *
+ * This component provides:
+ * - Reactive data updates
+ * - Plugin system with communication bus
+ * - Automatic resizing capabilities
+ * - Flexible children placement
+ * - TypeScript support with generics
+ *
+ * @template T - The type of the plugin bus data structure for type-safe plugin communication
+ *
+ * @param props - Component props extending uPlot options with SolidJS enhancements
+ * @returns JSX element containing the chart and any children components
+ *
+ * @example
+ * ```tsx
+ * <SolidUplot
+ *   data={chartData}
+ *   height={400}
+ *   autoResize
+ *   series={[
+ *     {},
+ *     { label: "Series 1", stroke: "red" }
+ *   ]}
+ *   onCreate={(chart) => console.log("Chart created:", chart)}
+ * />
+ * ```
+ */
 export const SolidUplot = <T extends VoidStruct = VoidStruct>(
   props: ParentProps<SolidUplotProps<T>>,
 ): JSX.Element => {
