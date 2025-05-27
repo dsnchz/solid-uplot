@@ -1,5 +1,11 @@
 # @dschz/solid-uplot
 
+## 0.1.1
+
+### Patch Changes
+
+- Adds missing jsdoc comments to exported symbols/types
+
 ## 0.1.0
 
 ### Summary
