@@ -1,5 +1,11 @@
 # @dschz/solid-uplot
 
+## 0.1.3
+
+### Patch Changes
+
+- Export missing UplotPluginFactory type for custom plugin authoring
+
 ## 0.1.2
 
 ### Patch Changes
