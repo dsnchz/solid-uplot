@@ -1,5 +1,11 @@
 # @dschz/solid-uplot
 
+## 0.1.2
+
+### Patch Changes
+
+- Updates package keywords to improve discoverability
+
 ## 0.1.1
 
 ### Patch Changes
