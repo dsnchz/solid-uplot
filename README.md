@@ -4,10 +4,8 @@
 
 # @dschz/solid-uplot
 
-[![SolidJS](https://img.shields.io/badge/SolidJS-≥1.6.0-2c4f7c?logo=solid&logoColor=c8c9cb)](https://www.solidjs.com)
 [![uPlot](https://img.shields.io/badge/uPlot-%3E%3D1.6.32-orange)](https://github.com/leeoniya/uPlot)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-blue)](https://www.typescriptlang.org)
 [![Bundle Size](https://img.shields.io/bundlephobia/minzip/@dschz/solid-uplot)](https://bundlephobia.com/package/@dschz/solid-uplot)
 [![npm](https://img.shields.io/npm/v/@dschz/solid-uplot)](https://www.npmjs.com/package/@dschz/solid-uplot)
 
