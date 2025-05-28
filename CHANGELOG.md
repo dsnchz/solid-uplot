@@ -1,5 +1,11 @@
 # @dschz/solid-uplot
 
+## 0.1.4
+
+### Patch Changes
+
+- Fixes linting and formatting issue and updates readme content
+
 ## 0.1.3
 
 ### Patch Changes
