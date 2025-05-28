@@ -2,7 +2,7 @@ import { type Component, type JSX, mergeProps, splitProps } from "solid-js";
 import { render } from "solid-js/web";
 import uPlot from "uplot";
 
-import type { UplotPluginFactory, SolidUplotPluginBus } from "../createPluginBus";
+import type { SolidUplotPluginBus, UplotPluginFactory } from "../createPluginBus";
 import { getSeriesData, type SeriesDatum } from "../utils/getSeriesData";
 import type { CursorPluginMessageBus } from "./cursor";
 import type { FocusSeriesPluginMessageBus } from "./focusSeries";
