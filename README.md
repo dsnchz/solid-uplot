@@ -8,6 +8,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Bundle Size](https://img.shields.io/bundlephobia/minzip/@dschz/solid-uplot)](https://bundlephobia.com/package/@dschz/solid-uplot)
 [![npm](https://img.shields.io/npm/v/@dschz/solid-uplot)](https://www.npmjs.com/package/@dschz/solid-uplot)
+[![CI](https://github.com/dsnchz/solid-uplot/actions/workflows/ci.yaml/badge.svg)](https://github.com/dsnchz/solid-uplot/actions/workflows/ci.yaml)
 
 > 💹 SolidJS wrapper for [uPlot](https://github.com/leeoniya/uPlot) — an ultra-fast, small footprint charting library for time-series data.
 
