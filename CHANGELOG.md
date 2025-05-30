@@ -1,5 +1,11 @@
 # @dschz/solid-uplot
 
+## 0.1.5
+
+### Patch Changes
+
+- updates readme content
+
 ## 0.1.4
 
 ### Patch Changes
