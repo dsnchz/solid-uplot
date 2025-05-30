@@ -1,5 +1,11 @@
 # @dschz/solid-uplot
 
+## 0.1.6
+
+### Patch Changes
+
+- updates readme badges
+
 ## 0.1.5
 
 ### Patch Changes
