@@ -1,5 +1,11 @@
 # @dschz/solid-uplot
 
+## 0.1.7
+
+### Patch Changes
+
+- Adds JSR score badge to readme
+
 ## 0.1.6
 
 ### Patch Changes
