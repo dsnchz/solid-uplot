@@ -8,6 +8,7 @@
 [![uPlot](https://img.shields.io/badge/uPlot-%3E%3D1.6.32-orange)](https://github.com/leeoniya/uPlot)
 [![npm](https://img.shields.io/npm/v/@dschz/solid-uplot?color=blue)](https://www.npmjs.com/package/@dschz/solid-uplot)
 [![Bundle Size](https://img.shields.io/bundlephobia/minzip/@dschz/solid-uplot)](https://bundlephobia.com/package/@dschz/solid-uplot)
+[![JSR](https://jsr.io/badges/@dschz/solid-uplot/score)](https://jsr.io/@dschz/solid-uplot)
 [![CI](https://github.com/dsnchz/solid-uplot/actions/workflows/ci.yaml/badge.svg)](https://github.com/dsnchz/solid-uplot/actions/workflows/ci.yaml)
 [![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?logo=discord&logoColor=white)](https://discord.gg/6wkpXQCNn6)
 
