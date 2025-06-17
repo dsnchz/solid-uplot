@@ -1,5 +1,6 @@
 import "uplot/dist/uPlot.min.css";
 
+import { mergeRefs, Ref } from "@solid-primitives/refs";
 import {
   createEffect,
   createMemo,
@@ -14,6 +15,7 @@ import {
 import uPlot from "uplot";
 
 import type { SolidUplotPluginBus, UplotPluginFactory, VoidStruct } from "./createPluginBus";
+import { createCursorMovePlugin, type OnCursorMoveParams } from "./eventPlugins";
 import { getSeriesData, type SeriesDatum } from "./utils/getSeriesData";
 
 /** Placement options for children components relative to the chart */
@@ -58,39 +60,54 @@ type OnCreateMeta = {
 };
 
 /**
+ * Events that can be passed to the SolidUplot component
+ */
+type SolidUplotEvents = {
+  /** Callback fired when the uPlot instance is created */
+  readonly onCreate?: (u: uPlot, meta: OnCreateMeta) => void;
+  /** Callback fired when the cursor moves */
+  readonly onCursorMove?: (params: OnCursorMoveParams) => void;
+};
+
+/**
  * Props for the SolidUplot component
  *
  * @template T - The type of the plugin bus data structure
  */
-type SolidUplotProps<T extends VoidStruct = VoidStruct> = SolidUplotOptions<T> & {
-  /** Ref callback to access the chart container element */
-  readonly ref?: (el: HTMLDivElement) => void;
-  /** Callback fired when the uPlot instance is created */
-  readonly onCreate?: (u: uPlot, meta: OnCreateMeta) => void;
-  /**
-   * Whether to reset scales when chart data is updated
-   * @default true
-   */
-  readonly resetScales?: boolean;
-  /** CSS styles for the chart container (position is managed internally) */
-  readonly style?: Omit<JSX.CSSProperties, "position">;
-  /**
-   * Where to place children components relative to the chart
-   * @default "top"
-   */
-  readonly childrenPlacement?: ChildrenPlacement;
-  /**
-   * Enable automatic resizing to fit container.
-   *
-   * When true:
-   * - Chart uses width/height props for initial render
-   * - Then automatically adapts to container size changes
-   * - If no width/height provided, uses sensible defaults (600x300)
-   *
-   * @default false
-   */
-  readonly autoResize?: boolean;
-};
+type SolidUplotProps<T extends VoidStruct = VoidStruct> = SolidUplotOptions<T> &
+  SolidUplotEvents & {
+    /** Class name for the chart container */
+    readonly class?: string;
+
+    /** CSS styles for the chart container (position is managed internally) */
+    readonly style?: Omit<JSX.CSSProperties, "position">;
+
+    /** Ref callback to access the chart container element */
+    readonly ref?: Ref<HTMLDivElement>;
+
+    /**
+     * Enable automatic resizing to fit container.
+     *
+     * When true:
+     * - Chart uses width/height props for initial render
+     * - Then automatically adapts to container size changes
+     * - If no width/height provided, uses sensible defaults (600x300)
+     *
+     * @default false
+     */
+    readonly autoResize?: boolean;
+
+    /**
+     * Whether to reset scales when chart data is updated
+     * @default true
+     */
+    readonly resetScales?: boolean;
+    /**
+     * Where to place children components relative to the chart
+     * @default "top"
+     */
+    readonly childrenPlacement?: ChildrenPlacement;
+  };
 
 /**
  * A SolidJS wrapper component for uPlot charts with enhanced features
@@ -146,8 +163,10 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
   const [local, options] = splitProps(_props, [
     "children",
     "childrenPlacement",
+    "class",
     "autoResize",
     "onCreate",
+    "onCursorMove",
     "style",
     "ref",
   ]);
@@ -164,9 +183,16 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
   const size = () => ({ width: updateableOptions.width, height: updateableOptions.height });
 
   const chartPlugins = createMemo(() => {
-    return system.plugins.map((plugin) =>
+    const plugins = system.plugins.map((plugin) =>
       typeof plugin === "function" ? plugin({ bus: system.pluginBus }) : plugin,
     );
+
+    // Add internal cursor move plugin if callback is provided
+    if (local.onCursorMove) {
+      plugins.push(createCursorMovePlugin(local.onCursorMove));
+    }
+
+    return plugins;
   });
 
   createEffect(() => {
@@ -229,9 +255,13 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
     });
   });
 
+  const classes = () => (local.class ? `solid-uplot ${local.class}` : "solid-uplot");
+
   return (
     <div
       id="solid-uplot-root"
+      ref={mergeRefs(local.ref, (el) => (container = el))}
+      class={classes()}
       style={{
         display: "flex",
         "flex-direction": local.childrenPlacement === "top" ? "column" : "column-reverse",
@@ -243,10 +273,6 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
           "min-height": "0",
         }),
         ...local.style,
-      }}
-      ref={(el) => {
-        container = el;
-        local.ref?.(el);
       }}
     >
       {local.children}

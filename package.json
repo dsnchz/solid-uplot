@@ -146,5 +146,7 @@
     "solid-js": ">=1.6.0",
     "uplot": ">=1.6.32"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@solid-primitives/refs": "^1.1.1"
+  }
 }
