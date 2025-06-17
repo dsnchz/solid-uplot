@@ -462,26 +462,35 @@ const MyDashboard = () => {
 ### SolidUplot Component
 
 ```tsx
-// Main component props (extends all uPlot.Options except plugins, width, height)
-type SolidUplotProps<T extends VoidStruct = VoidStruct> = SolidUplotOptions<T> & {
-  // Ref callback to access the chart container element
-  ref?: (el: HTMLDivElement) => void;
-
-  // Callback fired when the uPlot instance is created
-  onCreate?: (u: uPlot, meta: { seriesData: SeriesDatum[] }) => void;
-
-  // Whether to reset scales when chart data is updated (default: true)
-  resetScales?: boolean;
-
-  // CSS styles for the chart container (position is managed internally)
-  style?: Omit<JSX.CSSProperties, "position">;
-
-  // Where to place children components relative to the chart (default: "top")
-  childrenPlacement?: "top" | "bottom";
-
-  // Enable automatic resizing to fit container (default: false)
-  autoResize?: boolean;
+type SolidUplotEvents = {
+  /** Callback fired when the uPlot instance is created */
+  readonly onCreate?: (u: uPlot, meta: OnCreateMeta) => void;
+  /** Callback fired when the cursor moves */
+  readonly onCursorMove?: (params: OnCursorMoveParams) => void;
 };
+
+// Main component props (extends all uPlot.Options except plugins, width, height)
+type SolidUplotProps<T extends VoidStruct = VoidStruct> = SolidUplotOptions<T> &
+  SolidUplotEvents & {
+    // Ref callback to access the chart container element
+    ref?: Ref<HTMLDivElement>;
+
+    // CSS class name for the chart container (default: "solid-uplot")
+    // Additional classes will be appended to the default class
+    class?: string;
+
+    // CSS styles for the chart container (position is managed internally)
+    style?: Omit<JSX.CSSProperties, "position">;
+
+    // Enable automatic resizing to fit container (default: false)
+    autoResize?: boolean;
+
+    // Whether to reset scales when chart data is updated (default: true)
+    resetScales?: boolean;
+
+    // Where to place children components relative to the chart (default: "top")
+    childrenPlacement?: "top" | "bottom";
+  };
 
 // Configuration options extending uPlot.Options with SolidJS enhancements
 type SolidUplotOptions<T extends VoidStruct = VoidStruct> = Omit<
