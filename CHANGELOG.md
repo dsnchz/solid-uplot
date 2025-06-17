@@ -1,5 +1,11 @@
 # @dschz/solid-uplot
 
+## 0.2.0
+
+### Minor Changes
+
+- Adds default solid-uplot css class and onCursorMove callback
+
 ## 0.1.7
 
 ### Patch Changes
