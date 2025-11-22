@@ -59,14 +59,12 @@
   "browser": {},
   "exports": {
     ".": {
-      "solid": "./dist/index/index.jsx",
       "import": {
         "types": "./dist/index/index.d.ts",
         "default": "./dist/index/index.js"
       }
     },
     "./plugins": {
-      "solid": "./dist/plugins/index.jsx",
       "import": {
         "types": "./dist/plugins/index.d.ts",
         "default": "./dist/plugins/index.js"
