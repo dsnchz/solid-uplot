@@ -30,7 +30,6 @@ const vitestConfig = defineVitestConfig({
     setupFiles: ["./setupTests.ts"],
     exclude: TEST_EXCLUDES,
     coverage: {
-      all: true,
       provider: "istanbul",
       exclude: COVERAGE_EXCLUDE,
       thresholds: {
