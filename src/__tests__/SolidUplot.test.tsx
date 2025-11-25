@@ -987,4 +987,87 @@ describe("PLUGIN: tooltip", () => {
       expect(document.querySelector("#solid-uplot-tooltip-root")).not.toBeInTheDocument();
     });
   });
+
+  test("calls onPositionCalculated callback with position and placement", async () => {
+    const bus = createPluginBus<CursorPluginMessageBus>({
+      cursor: {
+        state: {},
+      },
+    });
+
+    let uPlotInstance!: uPlot;
+
+    const onPositionCalculatedSpy = vi.fn(
+      (position: { left: number; top: number }, _placement: string) => ({
+        left: position.left + 50, // Add custom offset
+        top: position.top + 25,
+      }),
+    );
+
+    render(() => (
+      <SolidUplot
+        width={600}
+        height={300}
+        data={[
+          [1, 2, 3],
+          [4, 5, 6],
+        ]}
+        series={[{}, { label: "Series 1" }]}
+        pluginBus={bus}
+        plugins={[
+          cursor(),
+          tooltip(MockTooltip, {
+            placement: "top-left",
+            onPositionCalculated: onPositionCalculatedSpy,
+          }),
+        ]}
+        onCreate={(chart) => {
+          uPlotInstance = chart;
+        }}
+      />
+    ));
+
+    await waitFor(() => expect(uPlotInstance).toBeDefined());
+
+    // Set cursor data to trigger tooltip positioning
+    bus.setData("cursor", {
+      sourceId: uPlotInstance.root.id,
+      state: {
+        [uPlotInstance.root.id]: {
+          plotId: uPlotInstance.root.id,
+          idx: 1,
+          xValue: 2,
+          visible: true,
+          position: { top: 100, left: 200 },
+        },
+      },
+    });
+
+    await waitFor(() => {
+      const tooltip = document.querySelector("#solid-uplot-tooltip-root") as HTMLElement;
+      expect(tooltip).toBeInTheDocument();
+    });
+
+    // Verify the callback was called with the correct arguments
+    await waitFor(() => {
+      expect(onPositionCalculatedSpy).toHaveBeenCalled();
+    });
+
+    const callArgs = onPositionCalculatedSpy.mock.calls[0]!;
+    expect(callArgs).toBeDefined();
+
+    const [position, placement] = callArgs;
+    expect(position).toHaveProperty("left");
+    expect(position).toHaveProperty("top");
+    expect(placement).toBe("top-left");
+
+    // Verify the modified position was applied
+    const tooltipElement = document.querySelector("#solid-uplot-tooltip-root") as HTMLElement;
+    const leftValue = parseInt(tooltipElement.style.left);
+    const topValue = parseInt(tooltipElement.style.top);
+
+    // The callback adds 50 to left and 25 to top
+    expect(leftValue).toBe(position.left + 50);
+    expect(topValue).toBe(position.top + 25);
+  });
 });
