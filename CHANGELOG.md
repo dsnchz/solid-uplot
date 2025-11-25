@@ -4,11 +4,11 @@
 
 ### Minor Changes
 
- - **Chart data types**: The `data` prop now accepts `number[][]` format in addition to `uPlot.AlignedData`, reducing friction when passing
+- **Chart data types**: The `data` prop now accepts `number[][]` format in addition to `uPlot.AlignedData`, reducing friction when passing
   common array-of-arrays data structures
-  - **Focus series plugin**: Added `shouldRedrawOnBusUpdate` callback option to provide fine-grained control over cross-chart focus
+- **Focus series plugin**: Added `shouldRedrawOnBusUpdate` callback option to provide fine-grained control over cross-chart focus
   synchronization (e.g., filtering by source chart, conditional coordination based on bus state)
-  - **Tooltip plugin**: Added `fixed` positioning option to prevent clipping when tooltips are rendered inside dialog elements or other
+- **Tooltip plugin**: Added `fixed` positioning option to prevent clipping when tooltips are rendered inside dialog elements or other
   overflow-constrained containers
 
 ## 0.2.0
