@@ -39,12 +39,14 @@ export type SolidUplotPlugin<T extends VoidStruct = VoidStruct> =
  */
 export type SolidUplotOptions<T extends VoidStruct = VoidStruct> = Omit<
   uPlot.Options,
-  "plugins" | "width" | "height"
+  "plugins" | "width" | "height" | "data"
 > & {
   /** Chart width in pixels */
   readonly width?: number;
   /** Chart height in pixels */
   readonly height?: number;
+  /** Chart data - accepts AlignedData or number[][] */
+  readonly data?: uPlot.AlignedData | number[][];
   /** Plugin communication bus for coordinating between plugins */
   readonly pluginBus?: SolidUplotPluginBus<T>;
   /** Array of plugins to apply to the chart */
@@ -210,7 +212,7 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
     };
 
     const initialSize = getInitialSize();
-    const initialData = untrack(() => updateableOptions.data);
+    const initialData = untrack(() => updateableOptions.data) as uPlot.AlignedData;
 
     const chart = new uPlot(
       {
@@ -247,7 +249,7 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
     });
 
     createEffect(() => {
-      chart.setData(updateableOptions.data, updateableOptions.resetScales);
+      chart.setData(updateableOptions.data as uPlot.AlignedData, updateableOptions.resetScales);
     });
 
     onCleanup(() => {
