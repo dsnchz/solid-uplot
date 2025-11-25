@@ -86,6 +86,30 @@ type TooltipConfigOptions = {
    * @default false
    */
   readonly fixed?: boolean;
+  /**
+   * Optional callback to process or modify the calculated tooltip position.
+   * Receives the calculated position and placement preference, and should return a position object with the same structure.
+   * Use this to implement custom positioning logic or constraints.
+   *
+   * @param position - The calculated position with left and top coordinates
+   * @param placement - The placement preference that was used for calculation
+   * @returns Modified position object with left and top coordinates
+   *
+   * @example
+   * ```ts
+   * onPositionCalculated: (position, placement) => ({
+   *   left: Math.max(0, position.left), // Prevent negative positioning
+   *   top: placement.includes('top') ? position.top - 5 : position.top + 10
+   * })
+   * ```
+   */
+  readonly onPositionCalculated?: (
+    position: { left: number; top: number },
+    placement: TooltipCursorPlacement,
+  ) => {
+    left: number;
+    top: number;
+  };
 };
 
 const TOOLTIP_OFFSET_X = 8;
@@ -161,6 +185,7 @@ export type TooltipPluginOptions = TooltipRootProps & TooltipConfigOptions;
  * - Automatic positioning with edge detection and flipping
  * - Scroll-aware positioning that works with page scrolling
  * - Configurable placement preferences
+ * - Position callback for custom positioning logic or overrides
  * - Accessible tooltip with proper ARIA attributes
  * - Automatic cleanup and memory management
  *
@@ -261,7 +286,11 @@ export const tooltip = (
 
             const chartCursorData = () => bus.data.cursor?.state[u.root.id];
 
-            const [tooltipOptions, containerProps] = splitProps(_options, ["placement", "fixed"]);
+            const [tooltipOptions, containerProps] = splitProps(_options, [
+              "placement",
+              "fixed",
+              "onPositionCalculated",
+            ]);
 
             return (
               <Show when={chartCursorData()}>
@@ -284,7 +313,7 @@ export const tooltip = (
                       ? cursorTop
                       : cursorTop + window.scrollY;
 
-                    return getTooltipPosition(
+                    const calculatedPosition = getTooltipPosition(
                       tooltipOptions.placement,
                       absoluteLeft,
                       absoluteTop,
@@ -292,6 +321,14 @@ export const tooltip = (
                       tooltipHeight,
                       tooltipOptions.fixed,
                     );
+
+                    // Allow user to override or modify the calculated position
+                    return tooltipOptions.onPositionCalculated
+                      ? tooltipOptions.onPositionCalculated(
+                          calculatedPosition,
+                          tooltipOptions.placement,
+                        )
+                      : calculatedPosition;
                   };
 
                   return (
