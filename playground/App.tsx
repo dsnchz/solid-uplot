@@ -10,6 +10,7 @@ import { LegendShowcasePage } from "./pages/LegendShowcase";
 import { MultiPlotPage } from "./pages/MultiPlot";
 import { PluginsPage } from "./pages/Plugins";
 import { Streaming } from "./pages/Streaming";
+import { TooltipDialogPage } from "./pages/TooltipDialog";
 import { Sidebar } from "./Sidebar";
 
 const RootLayout: Component<ParentProps> = (props) => (
@@ -25,6 +26,7 @@ export const App: Component = () => {
       <Route path="/" component={Home} />
       <Route path="/examples" component={Examples} />
       <Route path="/plugins" component={PluginsPage} />
+      <Route path="/tooltip-dialog" component={TooltipDialogPage} />
       <Route path="/legend-showcase" component={LegendShowcasePage} />
       <Route path="/streaming" component={Streaming} />
       <Route path="/multi-plot" component={MultiPlotPage} />

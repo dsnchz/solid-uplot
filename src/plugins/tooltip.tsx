@@ -80,6 +80,12 @@ type TooltipConfigOptions = {
    * @default "top-left"
    */
   readonly placement?: TooltipCursorPlacement;
+  /**
+   * Use fixed positioning for the tooltip. Set to true when the chart is in a
+   * fixed positioning context (like a dialog or modal) to prevent tooltip clipping.
+   * @default false
+   */
+  readonly fixed?: boolean;
 };
 
 const TOOLTIP_OFFSET_X = 8;
@@ -91,6 +97,7 @@ const getTooltipPosition = (
   top: number,
   tooltipWidth: number,
   tooltipHeight: number,
+  isFixed = false,
 ): { left: number; top: number } => {
   const baseX = placement.includes("left")
     ? left - tooltipWidth - TOOLTIP_OFFSET_X
@@ -99,9 +106,10 @@ const getTooltipPosition = (
     ? top - tooltipHeight - TOOLTIP_OFFSET_Y
     : top + TOOLTIP_OFFSET_Y;
 
-  // Convert absolute coordinates to viewport-relative for overflow checks
-  const viewportX = baseX - window.scrollX;
-  const viewportY = baseY - window.scrollY;
+  // For fixed positioning, coordinates are already viewport-relative
+  // For absolute positioning, convert document coordinates to viewport-relative
+  const viewportX = isFixed ? baseX : baseX - window.scrollX;
+  const viewportY = isFixed ? baseY : baseY - window.scrollY;
 
   const overflowsLeft = viewportX < 0;
   const overflowsRight = viewportX + tooltipWidth > window.innerWidth;
@@ -243,6 +251,7 @@ export const tooltip = (
             const _options = mergeProps(
               {
                 placement: "top-left" as TooltipCursorPlacement,
+                fixed: false,
                 id: "solid-uplot-tooltip-root",
                 style: {},
                 zIndex: 20,
@@ -252,19 +261,28 @@ export const tooltip = (
 
             const chartCursorData = () => bus.data.cursor?.state[u.root.id];
 
-            const [tooltipOptions, containerProps] = splitProps(_options, ["placement"]);
+            const [tooltipOptions, containerProps] = splitProps(_options, ["placement", "fixed"]);
 
             return (
               <Show when={chartCursorData()}>
                 {(cursor) => {
                   const position = () => {
                     const overRect = u.over.getBoundingClientRect();
-
-                    const absoluteLeft = overRect.left + cursor().position.left + window.scrollX;
-                    const absoluteTop = overRect.top + cursor().position.top + window.scrollY;
-
                     const tooltipWidth = tooltipRoot.offsetWidth ?? 0;
                     const tooltipHeight = tooltipRoot.offsetHeight ?? 0;
+
+                    // Calculate cursor position in viewport coordinates
+                    const cursorLeft = overRect.left + cursor().position.left;
+                    const cursorTop = overRect.top + cursor().position.top;
+
+                    // For fixed positioning, use viewport coordinates
+                    // For absolute positioning, convert to document coordinates
+                    const absoluteLeft = tooltipOptions.fixed
+                      ? cursorLeft
+                      : cursorLeft + window.scrollX;
+                    const absoluteTop = tooltipOptions.fixed
+                      ? cursorTop
+                      : cursorTop + window.scrollY;
 
                     return getTooltipPosition(
                       tooltipOptions.placement,
@@ -272,6 +290,7 @@ export const tooltip = (
                       absoluteTop,
                       tooltipWidth,
                       tooltipHeight,
+                      tooltipOptions.fixed,
                     );
                   };
 
@@ -283,11 +302,11 @@ export const tooltip = (
                       role="tooltip"
                       aria-label="Chart tooltip"
                       style={{
-                        position: "absolute",
+                        position: tooltipOptions.fixed ? "fixed" : "absolute",
                         "z-index": containerProps.zIndex,
+                        "pointer-events": "none",
                         left: `${position().left}px`,
                         top: `${position().top}px`,
-                        "pointer-events": "none",
                         ...containerProps.style,
                       }}
                     >
