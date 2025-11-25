@@ -1,5 +1,11 @@
 # @dschz/solid-uplot
 
+## 0.4.0
+
+### Minor Changes
+
+- Adds onPositionCalculated callback option to tooltip plugin
+
 ## 0.3.0
 
 ### Minor Changes
