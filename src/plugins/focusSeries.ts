@@ -94,7 +94,9 @@ export type FocusSeriesPluginMessageBus = {
 /**
  * Configuration options for the focus series plugin.
  */
-export type FocusSeriesPluginOptions = {
+export type FocusSeriesPluginOptions<
+  T extends CursorPluginMessageBus & FocusSeriesPluginMessageBus,
+> = {
   /**
    * The vertical distance in pixels required to focus a series.
    * If the cursor's Y position is within this threshold of a Y value, that series is considered focused.
@@ -124,6 +126,25 @@ export type FocusSeriesPluginOptions = {
    * @default false
    */
   readonly rebuildPaths?: boolean;
+
+  /**
+   *
+   * For charts that are configured with this plugin, this callback is used to determine if the chart
+   * should redraw when the plugin bus updates. It is an additional condition to the base condition `cursor?.sourceId !== u.root.id`
+   * which is always applied first to prevent the source chart from redrawing twice.
+   *
+   * This can be used to add filtering logic, such as only reacting to specific source charts.
+   *
+   * @default undefined (always redraw for non-source charts)
+   */
+  readonly shouldRedrawOnBusUpdate?: (params: {
+    /** The current chart instance (the one evaluating whether to redraw) */
+    readonly u: uPlot;
+    /** Current cursor state from the bus (may be from another chart) */
+    readonly cursor: T["cursor"];
+    /** Current focus series state from the bus */
+    readonly focusSeries: T["focusSeries"];
+  }) => boolean;
 };
 
 type SeriesFocusRedrawOptions = {
@@ -144,7 +165,7 @@ const seriesFocusRedraw = (u: uPlot, options: SeriesFocusRedrawOptions = {}) => 
   for (let i = 1; i < u.series.length; i++) {
     const s = u.series[i]!;
 
-    if (!focusTargets || !focusTargets.length) {
+    if (!focusTargets?.length) {
       s.alpha = 1; // restore alpha of all series
       continue;
     }
@@ -197,7 +218,7 @@ const seriesFocusRedraw = (u: uPlot, options: SeriesFocusRedrawOptions = {}) => 
  * @returns A plugin factory function that creates the focus series plugin instance
  */
 export const focusSeries = (
-  options: FocusSeriesPluginOptions = {},
+  options: FocusSeriesPluginOptions<CursorPluginMessageBus & FocusSeriesPluginMessageBus> = {},
 ): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus> => {
   return ({ bus }) => {
     if (!bus) {
@@ -247,14 +268,18 @@ export const focusSeries = (
           dispose = createRoot((dispose) => {
             createEffect(() => {
               const cursor = bus.data.cursor;
-              const focus = bus.data.focusSeries;
+              const focusSeries = bus.data.focusSeries;
 
-              if (cursor?.sourceId !== u.root.id) {
+              const isNotSourceChart = cursor?.sourceId !== u.root.id;
+              const userRedrawCondition =
+                options.shouldRedrawOnBusUpdate?.({ u, cursor, focusSeries }) ?? true;
+
+              if (isNotSourceChart && userRedrawCondition) {
                 seriesFocusRedraw(u, {
                   unfocusedAlpha,
                   focusedAlpha,
                   rebuildPaths,
-                  focusTargets: focus?.targets,
+                  focusTargets: focusSeries?.targets,
                 });
               }
             });
