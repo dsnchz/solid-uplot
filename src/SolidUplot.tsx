@@ -262,7 +262,6 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
   return (
     <div
       id="solid-uplot-root"
-      ref={mergeRefs(local.ref, (el) => (container = el))}
       class={classes()}
       style={{
         display: "flex",
@@ -272,12 +271,26 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
           width: "100%",
           height: "100%",
           "min-width": "0",
-          "min-height": "0",
         }),
         ...local.style,
       }}
     >
       {local.children}
+      <div
+        ref={mergeRefs(local.ref, (el) => (container = el))}
+        class="solid-uplot-chart"
+        style={{
+          position: "relative",
+          // When autoResize is enabled, use flex to fill remaining space
+          // flex-basis: 0 prevents content from dictating size (fixes infinite height bug)
+          // min-height uses the height prop as fallback for unconstrained containers
+          ...(local.autoResize && {
+            flex: "1 1 0",
+            "min-height": `${updateableOptions.height}px`,
+            "min-width": "0",
+          }),
+        }}
+      />
     </div>
   );
 };

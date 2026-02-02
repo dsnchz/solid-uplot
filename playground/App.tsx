@@ -9,6 +9,7 @@ import { Home } from "./pages/Home";
 import { LegendShowcasePage } from "./pages/LegendShowcase";
 import { MultiPlotPage } from "./pages/MultiPlot";
 import { PluginsPage } from "./pages/Plugins";
+import { ResizeBugTest } from "./pages/ResizeBugTest";
 import { Streaming } from "./pages/Streaming";
 import { TooltipDialogPage } from "./pages/TooltipDialog";
 import { Sidebar } from "./Sidebar";
@@ -32,6 +33,8 @@ export const App: Component = () => {
       <Route path="/multi-plot" component={MultiPlotPage} />
       <Route path="/children-placement" component={ChildrenPlacementPlayground} />
       <Route path="/dynamic-resize" component={DynamicResize} />
+      {/* Test page for E2E tests - not linked in sidebar */}
+      <Route path="/resize-bug-test" component={ResizeBugTest} />
       <Route path="*" component={ErrorPage} />
     </Router>
   );

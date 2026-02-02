@@ -1,5 +1,42 @@
 # @dschz/solid-uplot
 
+## 0.5.0
+
+### Breaking Changes
+
+#### DOM Structure Change
+
+The internal DOM structure has changed to fix the infinite height growth bug when using `autoResize`.
+
+**Before:**
+
+```html
+<div class="solid-uplot">
+  <!-- children -->
+  <div class="uplot">...</div>
+</div>
+```
+
+**After:**
+
+```html
+<div class="solid-uplot">
+  <!-- children -->
+  <div class="solid-uplot-chart">
+    <div class="uplot">...</div>
+  </div>
+</div>
+```
+
+**Migration:**
+
+- If you have CSS targeting `.solid-uplot > .uplot`, update to `.solid-uplot-chart > .uplot` or `.solid-uplot .uplot`
+- The `ref` prop still points to the container where uPlot is rendered (now `.solid-uplot-chart`)
+
+### Bug Fixes
+
+- **Fixed infinite height growth bug**: Charts using `autoResize` in unconstrained containers (parent with `height: auto`) no longer grow infinitely. The chart container now uses `flex: 1 1 0` with `min-height: 0`, which allows it to fill available space without forcing parent height growth.
+
 ## 0.4.0
 
 ### Minor Changes
