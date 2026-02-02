@@ -3,4 +3,11 @@ dist
 node_modules
 
 .DS_Store
+.tasks
 /*.tgz
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
