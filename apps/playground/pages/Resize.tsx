@@ -53,19 +53,15 @@ export const Resize: Component = () => {
           <li>
             <strong>Auto Resize</strong> — Set the{" "}
             <code class="rounded bg-blue-100 px-1">autoResize</code> prop. The chart uses a
-            ResizeObserver to automatically fill its container. When enabled, the{" "}
-            <code class="rounded bg-blue-100 px-1">width</code> and{" "}
-            <code class="rounded bg-blue-100 px-1">height</code> props act as minimum fallbacks
-            (defaulting to 600×300) for unconstrained containers, while constrained containers are
-            filled completely.
+            ResizeObserver to automatically fill its container. The container must have defined
+            dimensions (explicit height/width, flex layout, grid layout, etc.).
           </li>
           <li>
             <strong>Container-Driven</strong> — Measure the parent container and pass dimensions to
             the chart explicitly. Use <code class="rounded bg-blue-100 px-1">{"<AutoSizer>"}</code>{" "}
             for a render prop approach, or{" "}
             <code class="rounded bg-blue-100 px-1">createElementSize</code> for a ref-based
-            primitive without a wrapper component. Useful when you need to share size data across
-            multiple children or want explicit control over measurement.
+            primitive without a wrapper component.
           </li>
           <li>
             <strong>Manual Resize</strong> — Combine{" "}
@@ -145,107 +141,55 @@ export const Resize: Component = () => {
         <h2 class="mb-4 text-xl font-semibold">Auto Resize</h2>
         <p class="mb-3 text-sm text-gray-600">
           Chart uses a ResizeObserver to automatically fill its container. Enable this via the{" "}
-          <code class="rounded bg-gray-100 px-1 text-xs">autoResize</code> prop. No manual size
-          management needed — the chart responds automatically to container size changes.
+          <code class="rounded bg-gray-100 px-1 text-xs">autoResize</code> prop. The container must
+          have defined dimensions — the chart fills whatever space it provides.
         </p>
         <p class="mb-4 text-sm text-gray-600">
           When <code class="rounded bg-gray-100 px-1 text-xs">autoResize</code> is enabled, the{" "}
           <code class="rounded bg-gray-100 px-1 text-xs">width</code> and{" "}
-          <code class="rounded bg-gray-100 px-1 text-xs">height</code> props are not used as fixed
-          dimensions. Instead, they serve as{" "}
-          <code class="rounded bg-gray-100 px-1 text-xs">min-width</code> /{" "}
-          <code class="rounded bg-gray-100 px-1 text-xs">min-height</code> fallbacks for containers
-          that have no explicit size constraint. If neither prop is provided, the defaults are
-          600×300.
+          <code class="rounded bg-gray-100 px-1 text-xs">height</code> props are ignored. The chart
+          dimensions are determined entirely by the container.
         </p>
 
-        <div class="space-y-6">
-          {/* Unconstrained Container */}
-          <div>
-            <h3 class="mb-2 text-lg font-medium">Unconstrained Container</h3>
-            <p class="mb-3 text-sm text-gray-600">
-              This container has no height constraint. The chart settles at its default minimum
-              height (300px) without growing infinitely. Try resizing your browser window to see the
-              width adapt.
-            </p>
+        <p class="mb-3 text-sm text-gray-600">
+          The container below has an explicit height (400px). The chart fills the available space,
+          including accounting for child content placed above it. Try resizing your browser window
+          to see the width adapt.
+        </p>
 
-            <div class="mb-4 border-2 border-dashed border-blue-300 p-4">
-              <SolidUplot
-                autoResize
-                data={data()}
-                series={[
-                  {},
-                  { label: "Auto Resize", stroke: "#8b5cf6", width: 2 },
-                  { label: "Series B", stroke: "#f59e0b", width: 2 },
-                ]}
-                scales={{ x: { time: false } }}
-                childrenPlacement="top"
-              >
-                <div
-                  style={{
-                    height: "50px",
-                    background: "#ede9fe",
-                    padding: "8px",
-                    display: "flex",
-                    "align-items": "center",
-                    "justify-content": "center",
-                  }}
-                >
-                  Child content that adds height
-                </div>
-              </SolidUplot>
-            </div>
-
-            <pre class="overflow-x-auto rounded bg-gray-50 p-3 text-sm">
-              {`<SolidUplot autoResize data={data} series={series} />`}
-            </pre>
-          </div>
-
-          {/* Constrained Container */}
-          <div>
-            <h3 class="mb-2 text-lg font-medium">Constrained Container</h3>
-            <p class="mb-3 text-sm text-gray-600">
-              This container has an explicit height (400px). The chart fills the available space via
-              flexbox, regardless of the default fallback values.
-            </p>
-
+        <div class="mb-4 border-2 border-dashed border-blue-300 p-4" style={{ height: "400px" }}>
+          <SolidUplot
+            autoResize
+            data={data()}
+            style={CHART_STYLE}
+            series={[
+              {},
+              { label: "Auto Resize", stroke: "#8b5cf6", width: 2 },
+              { label: "Series B", stroke: "#f59e0b", width: 2 },
+            ]}
+            scales={{ x: { time: false } }}
+            childrenPlacement="top"
+          >
             <div
-              class="mb-4 border-2 border-dashed border-green-300 p-4"
-              style={{ height: "400px" }}
+              style={{
+                height: "50px",
+                background: "#dbeafe",
+                padding: "8px",
+                display: "flex",
+                "align-items": "center",
+                "justify-content": "center",
+              }}
             >
-              <SolidUplot
-                autoResize
-                data={data()}
-                series={[
-                  {},
-                  { label: "Constrained", stroke: "#22c55e", width: 2 },
-                  { label: "Series B", stroke: "#06b6d4", width: 2 },
-                ]}
-                scales={{ x: { time: false } }}
-                childrenPlacement="top"
-              >
-                <div
-                  style={{
-                    height: "50px",
-                    background: "#dcfce7",
-                    padding: "8px",
-                    display: "flex",
-                    "align-items": "center",
-                    "justify-content": "center",
-                  }}
-                >
-                  Child content that adds height
-                </div>
-              </SolidUplot>
+              Child content that adds height
             </div>
+          </SolidUplot>
+        </div>
 
-            <pre class="overflow-x-auto rounded bg-gray-50 p-3 text-sm">
-              {`<div style={{ height: '400px' }}>
+        <pre class="overflow-x-auto rounded bg-gray-50 p-3 text-sm">
+          {`<div style={{ height: '400px' }}>
   <SolidUplot autoResize data={data} series={series} />
 </div>`}
-            </pre>
-          </div>
-        </div>
+        </pre>
       </div>
 
       {/* Container-Driven Sizing */}
@@ -282,7 +226,8 @@ export const Resize: Component = () => {
             <h3 class="mb-2 text-lg font-medium">AutoSizer</h3>
             <p class="mb-3 text-sm text-gray-600">
               Wraps the chart in a measuring container and provides width/height via render prop.
-              Adjust the container size below.
+              AutoSizer measures the <strong>content area</strong> of its parent (excluding padding
+              and border), so the chart fits perfectly. Adjust the container size below.
             </p>
 
             <div class="mb-4 grid max-w-md grid-cols-1 gap-4 md:grid-cols-2">
@@ -357,7 +302,10 @@ export const Resize: Component = () => {
             <h3 class="mb-2 text-lg font-medium">createElementSize</h3>
             <p class="mb-3 text-sm text-gray-600">
               Observes a container via ref and returns reactive dimensions — no wrapper component
-              needed. Adjust the container size below.
+              needed. Since <code class="rounded bg-gray-100 px-1 text-xs">createElementSize</code>{" "}
+              uses <code class="rounded bg-gray-100 px-1 text-xs">getBoundingClientRect()</code>{" "}
+              (which measures the <strong>border box</strong> including padding), the ref should
+              point to an inner element with no padding or border. Adjust the container size below.
             </p>
 
             <div class="mb-4 grid max-w-md grid-cols-1 gap-4 md:grid-cols-2">
@@ -392,25 +340,26 @@ export const Resize: Component = () => {
             </div>
 
             <div
-              ref={elementSizeContainer}
-              class="mb-4 border-2 border-dashed border-amber-300 p-4"
+              class="mb-4 border-2 border-dashed border-green-300 p-4"
               style={{
                 width: `${elementSizeWidth()}px`,
                 height: `${elementSizeHeight()}px`,
               }}
             >
-              <SolidUplot
-                data={data()}
-                width={elementSize.width ?? 0}
-                height={elementSize.height ?? 0}
-                style={CHART_STYLE}
-                series={[
-                  {},
-                  { label: "ElementSize", stroke: "#f59e0b", width: 2 },
-                  { label: "Series B", stroke: "#a855f7", width: 2 },
-                ]}
-                scales={{ x: { time: false } }}
-              />
+              <div ref={elementSizeContainer} style={{ width: "100%", height: "100%" }}>
+                <SolidUplot
+                  data={data()}
+                  width={elementSize.width ?? 0}
+                  height={elementSize.height ?? 0}
+                  style={CHART_STYLE}
+                  series={[
+                    {},
+                    { label: "ElementSize", stroke: "#f59e0b", width: 2 },
+                    { label: "Series B", stroke: "#a855f7", width: 2 },
+                  ]}
+                  scales={{ x: { time: false } }}
+                />
+              </div>
             </div>
 
             <pre class="overflow-x-auto rounded bg-gray-50 p-3 text-sm">
@@ -419,12 +368,15 @@ export const Resize: Component = () => {
 let container!: HTMLDivElement;
 const size = createElementSize(() => container);
 
-<div ref={container} style={{ width: '100%', height: '400px' }}>
-  <SolidUplot
-    width={size.width ?? 0}
-    height={size.height ?? 0}
-    data={data}
-  />
+<div style={{ width: '100%', height: '400px' }}>
+  {/* Ref targets an inner div with no padding/border */}
+  <div ref={container} style={{ width: '100%', height: '100%' }}>
+    <SolidUplot
+      width={size.width ?? 0}
+      height={size.height ?? 0}
+      data={data}
+    />
+  </div>
 </div>`}
             </pre>
           </div>
