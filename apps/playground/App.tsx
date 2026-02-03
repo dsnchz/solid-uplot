@@ -2,6 +2,7 @@ import { Route, Router } from "@solidjs/router";
 import { type Component, type ParentProps } from "solid-js";
 
 import { ChildrenPlacementPlayground } from "./pages/ChildrenPlacement";
+import { DashboardLayoutPage } from "./pages/DashboardLayout";
 import { ErrorPage } from "./pages/Error";
 import { Examples } from "./pages/Examples";
 import { Home } from "./pages/Home";
@@ -32,6 +33,7 @@ export const App: Component = () => {
       <Route path="/multi-plot" component={MultiPlotPage} />
       <Route path="/children-placement" component={ChildrenPlacementPlayground} />
       <Route path="/resize" component={Resize} />
+      <Route path="/dashboard-layout" component={DashboardLayoutPage} />
       <Route path="*" component={ErrorPage} />
     </Router>
   );
