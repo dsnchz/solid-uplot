@@ -121,7 +121,7 @@ const getTooltipPosition = (
   top: number,
   tooltipWidth: number,
   tooltipHeight: number,
-  isFixed = false,
+  rootOffset: { left: number; top: number },
 ): { left: number; top: number } => {
   const baseX = placement.includes("left")
     ? left - tooltipWidth - TOOLTIP_OFFSET_X
@@ -130,10 +130,12 @@ const getTooltipPosition = (
     ? top - tooltipHeight - TOOLTIP_OFFSET_Y
     : top + TOOLTIP_OFFSET_Y;
 
-  // For fixed positioning, coordinates are already viewport-relative
-  // For absolute positioning, convert document coordinates to viewport-relative
-  const viewportX = isFixed ? baseX : baseX - window.scrollX;
-  const viewportY = isFixed ? baseY : baseY - window.scrollY;
+  // Convert to viewport coordinates for overflow detection.
+  // For fixed positioning: coordinates are already viewport-relative (rootOffset is {0,0}).
+  // For absolute positioning: coordinates are container-relative,
+  // so add the container's viewport offset to get viewport coordinates.
+  const viewportX = baseX + rootOffset.left;
+  const viewportY = baseY + rootOffset.top;
 
   const overflowsLeft = viewportX < 0;
   const overflowsRight = viewportX + tooltipWidth > window.innerWidth;
@@ -297,29 +299,39 @@ export const tooltip = (
                 {(cursor) => {
                   const position = () => {
                     const overRect = u.over.getBoundingClientRect();
+                    const rootRect = u.root.getBoundingClientRect();
                     const tooltipWidth = tooltipRoot.offsetWidth ?? 0;
                     const tooltipHeight = tooltipRoot.offsetHeight ?? 0;
 
                     // Calculate cursor position in viewport coordinates
-                    const cursorLeft = overRect.left + cursor().position.left;
-                    const cursorTop = overRect.top + cursor().position.top;
+                    const cursorViewportLeft = overRect.left + cursor().position.left;
+                    const cursorViewportTop = overRect.top + cursor().position.top;
 
-                    // For fixed positioning, use viewport coordinates
-                    // For absolute positioning, convert to document coordinates
-                    const absoluteLeft = tooltipOptions.fixed
-                      ? cursorLeft
-                      : cursorLeft + window.scrollX;
-                    const absoluteTop = tooltipOptions.fixed
-                      ? cursorTop
-                      : cursorTop + window.scrollY;
+                    // For fixed positioning: use viewport coordinates directly
+                    // For absolute positioning: convert to container-relative coordinates
+                    // (the tooltip is rendered inside u.root, whose parent has position: relative)
+                    const positionedLeft = tooltipOptions.fixed
+                      ? cursorViewportLeft
+                      : cursorViewportLeft - rootRect.left;
+                    const positionedTop = tooltipOptions.fixed
+                      ? cursorViewportTop
+                      : cursorViewportTop - rootRect.top;
+
+                    // rootOffset is used by getTooltipPosition to convert back to viewport
+                    // coordinates for edge-detection / overflow flipping.
+                    // For fixed: already viewport-relative, so offset is {0, 0}.
+                    // For absolute: add rootRect origin to get back to viewport coords.
+                    const rootOffset = tooltipOptions.fixed
+                      ? { left: 0, top: 0 }
+                      : { left: rootRect.left, top: rootRect.top };
 
                     const calculatedPosition = getTooltipPosition(
                       tooltipOptions.placement,
-                      absoluteLeft,
-                      absoluteTop,
+                      positionedLeft,
+                      positionedTop,
                       tooltipWidth,
                       tooltipHeight,
-                      tooltipOptions.fixed,
+                      rootOffset,
                     );
 
                     // Allow user to override or modify the calculated position

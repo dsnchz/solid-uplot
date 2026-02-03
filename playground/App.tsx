@@ -12,6 +12,7 @@ import { PluginsPage } from "./pages/Plugins";
 import { ResizeBugTest } from "./pages/ResizeBugTest";
 import { Streaming } from "./pages/Streaming";
 import { TooltipDialogPage } from "./pages/TooltipDialog";
+import { TooltipTest } from "./pages/TooltipTest";
 import { Sidebar } from "./Sidebar";
 
 const RootLayout: Component<ParentProps> = (props) => (
@@ -33,8 +34,9 @@ export const App: Component = () => {
       <Route path="/multi-plot" component={MultiPlotPage} />
       <Route path="/children-placement" component={ChildrenPlacementPlayground} />
       <Route path="/dynamic-resize" component={DynamicResize} />
-      {/* Test page for E2E tests - not linked in sidebar */}
+      {/* Test pages for E2E tests - not linked in sidebar */}
       <Route path="/resize-bug-test" component={ResizeBugTest} />
+      <Route path="/tooltip-test" component={TooltipTest} />
       <Route path="*" component={ErrorPage} />
     </Router>
   );
