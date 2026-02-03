@@ -1,0 +1,8 @@
+{
+  "extends": "@dschz/tsconfig/solid.json",
+  "compilerOptions": {
+    "types": ["@testing-library/jest-dom"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "*.ts", "*.tsx"],
+  "exclude": ["dist", "node_modules"]
+}

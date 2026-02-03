@@ -1,96 +1,17 @@
 {
-  "name": "@dschz/solid-uplot",
-  "version": "0.4.0",
-  "description": "SolidJS wrapper for uPlot — ultra-fast, tiny time-series & charting library",
+  "name": "solid-uplot",
+  "version": "0.0.0",
+  "private": true,
   "type": "module",
-  "author": "Daniel Sanchez <dsanc89@pm.me>",
-  "license": "MIT",
-  "keywords": [
-    "analytics",
-    "canvas",
-    "chart",
-    "charts",
-    "dashboard",
-    "data-dashboard",
-    "data-visualization",
-    "data-viz",
-    "fast",
-    "financial-charts",
-    "interactive-charts",
-    "lightweight",
-    "lightweight-charts",
-    "metrics",
-    "plugin",
-    "plugins",
-    "plotting",
-    "real-time",
-    "solid",
-    "solid-chart",
-    "solid-component",
-    "solid-plugin",
-    "solid-uplot",
-    "solidjs",
-    "solidjs-wrapper",
-    "streaming-data",
-    "time-series",
-    "timeseries",
-    "typescript",
-    "uplot",
-    "uplot-solid",
-    "visualization"
+  "workspaces": [
+    "apps/*",
+    "packages/*"
   ],
-  "homepage": "https://github.com/dsnchz/solid-uplot#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/dsnchz/solid-uplot.git"
-  },
-  "bugs": {
-    "url": "https://github.com/dsnchz/solid-uplot/issues"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "files": [
-    "dist"
-  ],
-  "main": "./dist/index/index.js",
-  "module": "./dist/index/index.js",
-  "types": "./dist/index/index.d.ts",
-  "browser": {},
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index/index.d.ts",
-        "default": "./dist/index/index.js"
-      }
-    },
-    "./plugins": {
-      "import": {
-        "types": "./dist/plugins/index.d.ts",
-        "default": "./dist/plugins/index.js"
-      }
-    },
-    "./utils": {
-      "import": {
-        "types": "./dist/utils/index.d.ts",
-        "default": "./dist/utils/index.js"
-      }
-    }
-  },
-  "typesVersions": {
-    "*": {
-      "plugins": [
-        "./dist/plugins/index.d.ts"
-      ],
-      "utils": [
-        "./dist/utils/index.d.ts"
-      ]
-    }
-  },
   "scripts": {
-    "build": "tsup",
-    "build:watch": "tsup --watch",
-    "dev": "vite",
+    "build": "bun run --filter @dschz/solid-uplot build",
+    "build:watch": "bun run --filter @dschz/solid-uplot build:watch",
+    "dev": "bun run --filter playground dev",
+    "dev:e2e": "bun run --filter e2e dev",
     "format": "prettier . --check",
     "format:fix": "prettier . --write",
     "lint": "eslint .",
@@ -98,56 +19,24 @@
     "pkg:changeset": "changeset",
     "pkg:version": "changeset version",
     "pkg:publish": "bun run build && changeset publish",
-    "serve": "vite preview",
-    "start": "vite",
-    "test": "vitest run",
-    "test:cov": "vitest run --coverage",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "typecheck": "tsc --noEmit"
+    "test": "bun run --filter @dschz/solid-uplot test",
+    "test:cov": "bun run --filter @dschz/solid-uplot test:cov",
+    "test:e2e": "bun run --filter e2e test:e2e",
+    "test:e2e:ui": "bun run --filter e2e test:e2e:ui",
+    "typecheck": "bun run --filter '*' typecheck"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.7",
-    "@dschz/solid-auto-sizer": "^0.1.3",
-    "@playwright/test": "^1.58.1",
-    "@solidjs/router": "^0.15.4",
-    "@solidjs/testing-library": "^0.8.10",
-    "@tailwindcss/vite": "^4.1.17",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/bun": "^1.3.3",
-    "@types/prismjs": "^1.26.5",
-    "@typescript-eslint/eslint-plugin": "^8.47.0",
-    "@typescript-eslint/parser": "^8.47.0",
-    "@vitest/coverage-istanbul": "^4.0.13",
-    "@wessberg/pointer-events": "^1.0.9",
-    "canvas": "^3.2.0",
-    "eslint": "^9.39.1",
+    "@changesets/cli": "2.29.8",
+    "@eslint/js": "9.39.2",
+    "@typescript-eslint/eslint-plugin": "8.54.0",
+    "@typescript-eslint/parser": "8.54.0",
+    "eslint": "9.39.2",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-solid": "^0.14.5",
-    "globals": "^16.5.0",
+    "globals": "17.3.0",
     "jiti": "^2.6.1",
-    "jsdom": "^27.2.0",
-    "path2d": "^0.3.1",
-    "prettier": "^3.6.2",
-    "prismjs": "^1.30.0",
-    "solid-js": "^1.9.10",
-    "solid-prism-editor": "^2.1.0",
-    "tailwindcss": "^4.1.17",
-    "tsup": "^8.5.1",
-    "tsup-preset-solid": "^2.2.0",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.47.0",
-    "uplot": "^1.6.32",
-    "vite": "^7.2.4",
-    "vite-plugin-solid": "^2.11.10",
-    "vitest": "^4.0.13"
-  },
-  "peerDependencies": {
-    "solid-js": ">=1.6.0",
-    "uplot": ">=1.6.32"
-  },
-  "dependencies": {
-    "@solid-primitives/refs": "^1.1.2"
+    "prettier": "3.8.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.54.0"
   }
 }

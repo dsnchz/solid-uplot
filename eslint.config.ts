@@ -26,7 +26,9 @@ export default tseslint.config(
       parser: tseslint.parser,
       parserOptions: {
         sourceType: "module",
-        project: "./tsconfig.json",
+        projectService: {
+          allowDefaultProject: ["apps/e2e/__tests__/*.ts", "eslint.config.ts"],
+        },
         ecmaFeatures: {
           jsx: true,
         },
@@ -52,7 +54,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["__tests__/**/*.ts", "__tests__/**/*.tsx"],
+    files: ["**/__tests__/**/*.ts", "**/__tests__/**/*.tsx"],
     languageOptions: {
       globals: {
         ...globals.node,

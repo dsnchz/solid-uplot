@@ -1,0 +1,30 @@
+{
+  "name": "playground",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@dschz/solid-auto-sizer": "^0.1.3",
+    "@dschz/solid-uplot": "workspace:*",
+    "@solid-primitives/resize-observer": "2.1.3",
+    "@solidjs/router": "^0.15.4",
+    "prismjs": "^1.30.0",
+    "solid-js": "^1.9.10",
+    "solid-prism-editor": "^2.1.0",
+    "uplot": "^1.6.32"
+  },
+  "devDependencies": {
+    "@dschz/tsconfig": "workspace:*",
+    "@tailwindcss/vite": "^4.1.17",
+    "@types/prismjs": "^1.26.5",
+    "tailwindcss": "^4.1.17",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.4",
+    "vite-plugin-solid": "^2.11.10"
+  }
+}

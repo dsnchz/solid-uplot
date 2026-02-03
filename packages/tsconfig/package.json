@@ -1,0 +1,12 @@
+{
+  "name": "@dschz/tsconfig",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./base.json": "./base.json",
+    "./solid.json": "./solid.json"
+  },
+  "devDependencies": {
+    "@tsconfig/strictest": "^2.0.8"
+  }
+}

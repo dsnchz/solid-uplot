@@ -1,0 +1,8 @@
+{
+  "extends": "@dschz/tsconfig/solid.json",
+  "compilerOptions": {
+    "types": ["vite/client"]
+  },
+  "include": ["*.ts", "*.tsx", "pages/**/*.ts", "pages/**/*.tsx"],
+  "exclude": ["node_modules", "dist"]
+}
