@@ -18,6 +18,16 @@ import type { SolidUplotPluginBus, UplotPluginFactory, VoidStruct } from "./crea
 import { createCursorMovePlugin, type OnCursorMoveParams } from "./eventPlugins";
 import { getSeriesData, type SeriesDatum } from "./utils/getSeriesData";
 
+const __DEV__ = (() => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const g = globalThis as any;
+    return g.process?.env?.NODE_ENV !== "production";
+  } catch {
+    return false;
+  }
+})();
+
 /** Placement options for children components relative to the chart */
 type ChildrenPlacement = "top" | "bottom";
 
@@ -44,9 +54,9 @@ export type SolidUplotOptions<T extends VoidStruct = VoidStruct> = Omit<
   /**
    * Chart width in pixels.
    *
-   * When `autoResize` is enabled, this value is used as the `min-width`
-   * fallback for unconstrained containers. The chart will grow beyond
-   * this value if the container allows it.
+   * Used as a fixed dimension when `autoResize` is disabled.
+   * Ignored when `autoResize` is enabled — the chart fills its
+   * container's width automatically.
    *
    * @default 600
    */
@@ -54,9 +64,9 @@ export type SolidUplotOptions<T extends VoidStruct = VoidStruct> = Omit<
   /**
    * Chart height in pixels.
    *
-   * When `autoResize` is enabled, this value is used as the `min-height`
-   * fallback for unconstrained containers. The chart will grow beyond
-   * this value if the container allows it.
+   * Used as a fixed dimension when `autoResize` is disabled.
+   * Ignored when `autoResize` is enabled — the chart fills its
+   * container's height automatically.
    *
    * @default 300
    */
@@ -108,16 +118,11 @@ type SolidUplotProps<T extends VoidStruct = VoidStruct> = SolidUplotOptions<T> &
      *
      * When enabled, the chart uses a ResizeObserver to continuously
      * match its container's dimensions. The `width` and `height` props
-     * are **not** used as fixed dimensions — instead they serve as
-     * `min-width` / `min-height` fallbacks for containers that have
-     * no explicit size constraint. If neither prop is provided, the
-     * defaults are 600×300.
+     * are ignored — the chart fills whatever space its container provides.
      *
-     * - **Constrained container** (explicit height/width on parent):
-     *   the chart fills the available space via flexbox.
-     * - **Unconstrained container** (no explicit height on parent):
-     *   the chart renders at the `min-height` value (the `height`
-     *   prop, defaulting to 300px) and will not grow infinitely.
+     * The container **must** have defined dimensions (explicit height/width,
+     * flex layout, grid layout, etc.). If the container has no height, the
+     * chart will render at 0px and a development-mode warning will be logged.
      *
      * @default false
      */
@@ -152,16 +157,22 @@ type SolidUplotProps<T extends VoidStruct = VoidStruct> = SolidUplotOptions<T> &
  *
  * @example
  * ```tsx
+ * // Fixed size
  * <SolidUplot
  *   data={chartData}
+ *   width={600}
  *   height={400}
- *   autoResize
- *   series={[
- *     {},
- *     { label: "Series 1", stroke: "red" }
- *   ]}
- *   onCreate={(chart) => console.log("Chart created:", chart)}
+ *   series={[{}, { label: "Series 1", stroke: "red" }]}
  * />
+ *
+ * // Auto resize (container must have dimensions)
+ * <div style={{ height: "400px" }}>
+ *   <SolidUplot
+ *     data={chartData}
+ *     autoResize
+ *     series={[{}, { label: "Series 1", stroke: "red" }]}
+ *   />
+ * </div>
  * ```
  */
 export const SolidUplot = <T extends VoidStruct = VoidStruct>(
@@ -224,7 +235,9 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
   createEffect(() => {
     const getInitialSize = () => {
       if (local.autoResize) {
-        // For autoResize, use container dimensions or fallback
+        // For autoResize, use container dimensions if available.
+        // Fallback to 600x300 for initial uPlot construction only —
+        // the ResizeObserver will immediately correct to actual size.
         const rect = container.getBoundingClientRect();
         return {
           width: rect.width > 0 ? Math.floor(rect.width) : 600,
@@ -258,9 +271,21 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
     createEffect(() => {
       if (!local.autoResize) return;
 
+      let hasWarnedZeroHeight = false;
+
       const resizeObserver = new ResizeObserver((entries) => {
         for (const entry of entries) {
           const { width, height } = entry.contentRect;
+
+          if (!hasWarnedZeroHeight && height === 0 && __DEV__) {
+            hasWarnedZeroHeight = true;
+            console.warn(
+              "[SolidUplot] autoResize observed 0px height. " +
+                "Ensure the parent container has an explicit height " +
+                "or is within a flex/grid layout that provides height.",
+            );
+          }
+
           chart.setSize({ width: Math.floor(width), height: Math.floor(height) });
         }
       });
@@ -307,13 +332,12 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
           position: "relative",
           // When autoResize is enabled, use flex to fill remaining space.
           // flex-basis: 0 prevents content from dictating size (fixes infinite height bug).
-          // min-width: 0 is sufficient because block elements naturally fill horizontal
-          // space from their parent. min-height uses the height prop as a fallback floor
-          // because height does not flow from parent to child in CSS — without it,
-          // unconstrained containers would collapse the chart to 0px.
+          // min-width/min-height: 0 allow the chart to shrink freely within
+          // the flex container. The parent must provide dimensions — if it
+          // doesn't, the chart collapses to 0px (with a dev-mode warning).
           ...(local.autoResize && {
             flex: "1 1 0",
-            "min-height": `${updateableOptions.height}px`,
+            "min-height": "0",
             "min-width": "0",
           }),
         }}
