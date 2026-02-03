@@ -7,10 +7,9 @@ import { expect, test } from "@playwright/test";
  * height constraint, a feedback loop occurred causing infinite height growth.
  *
  * The fix uses `flex: 1 1 0` with `min-height: 0` on the chart container, which
- * prevents the chart from forcing parent height growth while still filling
- * available space.
- *
- * Both constrained and unconstrained containers should now maintain stable heights.
+ * prevents the chart from forcing parent height growth. In unconstrained containers,
+ * the chart renders at 0px height (the child content still contributes height).
+ * In constrained containers, the chart fills the available space correctly.
  */
 test.describe("Infinite Height Growth Bug (Fixed)", () => {
   test.beforeEach(async ({ page }) => {

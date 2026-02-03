@@ -94,10 +94,10 @@ export const Resize: Component = () => {
           <div>
             <h3 class="mb-2 text-lg font-medium">Auto Resize (ResizeObserver)</h3>
             <p class="mb-3 text-sm text-gray-600">
-              Verifies chart fills its container via ResizeObserver and responds to viewport
-              changes.
+              Verifies chart fills its sized container (400px height) via ResizeObserver and
+              responds to viewport changes.
             </p>
-            <div class="border-2 border-dashed border-blue-300 p-4">
+            <div class="border-2 border-dashed border-blue-300 p-4" style={{ height: "400px" }}>
               <SolidUplot
                 data={data()}
                 autoResize
@@ -227,8 +227,8 @@ export const Resize: Component = () => {
       <div class="rounded-lg border border-gray-200 bg-white p-6">
         <h2 class="mb-2 text-xl font-semibold">Auto Resize Constraints</h2>
         <p class="mb-4 text-sm text-gray-600">
-          Tests autoResize behavior under different container constraints — with and without
-          explicit height.
+          Tests autoResize behavior under different container constraints. Unconstrained containers
+          result in a 0px chart (with a dev warning), while constrained containers fill correctly.
         </p>
 
         <div class="space-y-6">
@@ -237,7 +237,8 @@ export const Resize: Component = () => {
             <h3 class="mb-2 text-lg font-semibold text-blue-700">Unconstrained Container</h3>
             <p class="mb-3 text-sm text-gray-600">
               Verifies autoResize in a container with no explicit height does not cause infinite
-              growth.
+              growth. The chart renders at 0px height (expected) while the child content remains
+              visible.
             </p>
             <div data-testid="unconstrained-container">
               <SolidUplot
