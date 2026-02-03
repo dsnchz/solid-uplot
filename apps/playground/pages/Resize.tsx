@@ -151,45 +151,117 @@ export const Resize: Component = () => {
           dimensions are determined entirely by the container.
         </p>
 
-        <p class="mb-3 text-sm text-gray-600">
-          The container below has an explicit height (400px). The chart fills the available space,
-          including accounting for child content placed above it. Try resizing your browser window
-          to see the width adapt.
-        </p>
+        <div class="space-y-6">
+          {/* Sized Container */}
+          <div>
+            <h3 class="mb-2 text-lg font-medium">Sized Container</h3>
+            <p class="mb-3 text-sm text-gray-600">
+              The container below has an explicit height (400px). The chart fills the available
+              space, including accounting for child content placed above it. Try resizing your
+              browser window to see the width adapt.
+            </p>
 
-        <div class="mb-4 border-2 border-dashed border-blue-300 p-4" style={{ height: "400px" }}>
-          <SolidUplot
-            autoResize
-            data={data()}
-            style={CHART_STYLE}
-            series={[
-              {},
-              { label: "Auto Resize", stroke: "#8b5cf6", width: 2 },
-              { label: "Series B", stroke: "#f59e0b", width: 2 },
-            ]}
-            scales={{ x: { time: false } }}
-            childrenPlacement="top"
-          >
             <div
-              style={{
-                height: "50px",
-                background: "#dbeafe",
-                padding: "8px",
-                display: "flex",
-                "align-items": "center",
-                "justify-content": "center",
-              }}
+              class="mb-4 border-2 border-dashed border-blue-300 p-4"
+              style={{ height: "400px" }}
             >
-              Child content that adds height
+              <SolidUplot
+                autoResize
+                data={data()}
+                style={CHART_STYLE}
+                series={[
+                  {},
+                  { label: "Auto Resize", stroke: "#8b5cf6", width: 2 },
+                  { label: "Series B", stroke: "#f59e0b", width: 2 },
+                ]}
+                scales={{ x: { time: false } }}
+                childrenPlacement="top"
+              >
+                <div
+                  style={{
+                    height: "50px",
+                    background: "#dbeafe",
+                    padding: "8px",
+                    display: "flex",
+                    "align-items": "center",
+                    "justify-content": "center",
+                  }}
+                >
+                  Child content that adds height
+                </div>
+              </SolidUplot>
             </div>
-          </SolidUplot>
-        </div>
 
-        <pre class="overflow-x-auto rounded bg-gray-50 p-3 text-sm">
-          {`<div style={{ height: '400px' }}>
+            <pre class="overflow-x-auto rounded bg-gray-50 p-3 text-sm">
+              {`<div style={{ height: '400px' }}>
   <SolidUplot autoResize data={data} series={series} />
 </div>`}
-        </pre>
+            </pre>
+          </div>
+
+          {/* Unsized Container */}
+          <div>
+            <h3 class="mb-2 text-lg font-medium">Unsized Container</h3>
+            <p class="mb-3 text-sm text-gray-600">
+              The container below has <strong>no explicit height</strong>. Notice how the child
+              content bar is visible but the chart itself has collapsed to 0px.
+            </p>
+
+            <div class="mb-4 border-2 border-dashed border-blue-300 p-4">
+              <SolidUplot
+                autoResize
+                data={data()}
+                style={CHART_STYLE}
+                series={[
+                  {},
+                  { label: "Collapsed", stroke: "#8b5cf6", width: 2 },
+                  { label: "Series B", stroke: "#f59e0b", width: 2 },
+                ]}
+                scales={{ x: { time: false } }}
+                childrenPlacement="top"
+              >
+                <div
+                  style={{
+                    height: "50px",
+                    background: "#fef3c7",
+                    padding: "8px",
+                    display: "flex",
+                    "align-items": "center",
+                    "justify-content": "center",
+                  }}
+                >
+                  Child content is visible, but the chart below is 0px
+                </div>
+              </SolidUplot>
+            </div>
+
+            <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm">
+              <p class="mb-2 font-medium text-amber-800">Why did the chart collapse?</p>
+              <p class="mb-2 text-amber-700">
+                <code class="rounded bg-amber-100 px-1 text-xs">autoResize</code> means "fill the
+                container." If the container has no defined height, the chart has no height to fill
+                — so it collapses to 0px. In development mode, a console warning is logged to help
+                identify this issue.
+              </p>
+              <p class="text-amber-700">
+                <strong>Fix:</strong> Give the container an explicit height (e.g.{" "}
+                <code class="rounded bg-amber-100 px-1 text-xs">height: 400px</code>), or place it
+                within a flex/grid layout that provides height. See the{" "}
+                <a href="/dashboard-layout" class="font-medium text-amber-900 underline">
+                  Dashboard Layout
+                </a>{" "}
+                page for a realistic example using flexbox.
+              </p>
+            </div>
+
+            <pre class="overflow-x-auto rounded bg-gray-50 p-3 text-sm">
+              {`{/* Container has no height — chart collapses to 0px */}
+<div>
+  <SolidUplot autoResize data={data} series={series} />
+</div>`}
+            </pre>
+          </div>
+        </div>
       </div>
 
       {/* Container-Driven Sizing */}
