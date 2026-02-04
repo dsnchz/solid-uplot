@@ -124,7 +124,7 @@ export const PluginsPage: Component = () => {
       <div class="mb-8 flex items-center justify-between">
         <h1 class="text-3xl font-bold">Plugin System</h1>
         <a
-          href="https://github.com/dsnchz/solid-uplot/blob/main/playground/pages/Plugins.tsx"
+          href="https://github.com/dsnchz/solid-uplot/blob/main/apps/playground/pages/Plugins.tsx"
           target="_blank"
           rel="noopener noreferrer"
           class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900"
@@ -152,7 +152,7 @@ export const PluginsPage: Component = () => {
         chart ecosystem.
       </p>
 
-      <div class="rounded-lg border border-gray-200 bg-white p-4">
+      <div class="rounded-lg border border-gray-200 bg-white p-4" style={{ height: "400px" }}>
         <SolidUplot
           autoResize
           data={[
@@ -166,7 +166,6 @@ export const PluginsPage: Component = () => {
             [3, 5, 8, 10, 12, 15, 18, 20, 25, 28], // Signups
             [7, 10, 14, 18, 16, 20, 24, 28, 32, 36], // Downloads
           ]}
-          height={400}
           scales={{
             x: {
               time: false,

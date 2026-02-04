@@ -146,7 +146,7 @@ export const LegendShowcasePage: Component = () => {
       <div class="mb-8 flex items-center justify-between">
         <h1 class="text-3xl font-bold">Legend Plugin Showcase</h1>
         <a
-          href="https://github.com/dsnchz/solid-uplot/blob/main/playground/pages/LegendShowcase.tsx"
+          href="https://github.com/dsnchz/solid-uplot/blob/main/apps/playground/pages/LegendShowcase.tsx"
           target="_blank"
           rel="noopener noreferrer"
           class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900"
@@ -176,11 +176,10 @@ export const LegendShowcasePage: Component = () => {
             A space-efficient legend that displays series horizontally with minimal visual
             footprint. Perfect for dashboards where space is at a premium.
           </p>
-          <div class="rounded-lg border border-gray-200 bg-white p-4">
+          <div class="rounded-lg border border-gray-200 bg-white p-4" style={{ height: "300px" }}>
             <SolidUplot
               autoResize
               data={sampleData}
-              height={300}
               scales={{ x: { time: false } }}
               series={sampleSeries}
               plugins={[
@@ -201,11 +200,10 @@ export const LegendShowcasePage: Component = () => {
             A more spacious legend with larger indicators and clear labeling. Ideal when you have
             sufficient space and want maximum readability.
           </p>
-          <div class="rounded-lg border border-gray-200 bg-white p-4">
+          <div class="rounded-lg border border-gray-200 bg-white p-4" style={{ height: "300px" }}>
             <SolidUplot
               autoResize
               data={sampleData}
-              height={300}
               scales={{ x: { time: false } }}
               series={sampleSeries}
               plugins={[
@@ -227,11 +225,10 @@ export const LegendShowcasePage: Component = () => {
             subtle visual feedback when tooltips are active without interfering with data
             exploration.
           </p>
-          <div class="rounded-lg border border-gray-200 bg-white p-4">
+          <div class="rounded-lg border border-gray-200 bg-white p-4" style={{ height: "300px" }}>
             <SolidUplot
               autoResize
               data={sampleData}
-              height={300}
               scales={{ x: { time: false } }}
               series={sampleSeries}
               plugins={[

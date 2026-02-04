@@ -76,7 +76,7 @@ export const MultiPlotPage: Component = () => {
       <div class="mb-4 flex items-center justify-between">
         <h1 class="text-3xl font-bold">Multiple Synchronized Plots</h1>
         <a
-          href="https://github.com/dsnchz/solid-uplot/blob/main/playground/pages/MultiPlot.tsx"
+          href="https://github.com/dsnchz/solid-uplot/blob/main/apps/playground/pages/MultiPlot.tsx"
           target="_blank"
           rel="noopener noreferrer"
           class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900"
