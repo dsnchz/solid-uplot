@@ -18,15 +18,7 @@ import type { SolidUplotPluginBus, UplotPluginFactory, VoidStruct } from "./crea
 import { createCursorMovePlugin, type OnCursorMoveParams } from "./eventPlugins";
 import { getSeriesData, type SeriesDatum } from "./utils/getSeriesData";
 
-const __DEV__ = (() => {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const g = globalThis as any;
-    return g.process?.env?.NODE_ENV !== "production";
-  } catch {
-    return false;
-  }
-})();
+const __DEV__ = import.meta.env.DEV;
 
 /** Placement options for children components relative to the chart */
 type ChildrenPlacement = "top" | "bottom";
@@ -277,12 +269,12 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
         for (const entry of entries) {
           const { width, height } = entry.contentRect;
 
-          if (!hasWarnedZeroHeight && height === 0 && __DEV__) {
+          if (height === 0 && !hasWarnedZeroHeight && __DEV__) {
             hasWarnedZeroHeight = true;
             console.warn(
               "[SolidUplot] autoResize observed 0px height. " +
-              "Ensure the parent container has an explicit height " +
-              "or is within a flex/grid layout that provides height.",
+                "Ensure the parent container has an explicit height " +
+                "or is within a flex/grid layout that provides height.",
             );
           }
 
