@@ -3,6 +3,16 @@
   "version": "0.5.0",
   "license": "MIT",
   "exports": "./src/index.ts",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js"
+  },
+  "imports": {
+    "solid-js": "npm:solid-js@^1.6.0",
+    "solid-js/*": "npm:solid-js@^1.6.0/*",
+    "uplot": "npm:uplot@^1.6.32",
+    "uplot/*": "npm:uplot@^1.6.32/*"
+  },
   "publish": {
     "include": ["LICENSE", "README.md", "CHANGELOG.md", "src/**/*.tsx", "src/**/*.ts"],
     "exclude": ["**/*.test.tsx", "**/*.test.ts"]
