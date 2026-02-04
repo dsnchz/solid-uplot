@@ -650,7 +650,7 @@ describe("PLUGIN: legend", () => {
     expect(legendContainer).toHaveStyle({
       position: "absolute",
       "z-index": "10",
-      "pointer-events": "auto",
+      "pointer-events": "none",
       padding: "10px",
     });
   });
@@ -685,7 +685,7 @@ describe("PLUGIN: legend", () => {
     expect(legendContainer).toHaveStyle({
       position: "absolute",
       "z-index": "10",
-      "pointer-events": "auto",
+      "pointer-events": "none",
     });
   });
 });

@@ -123,7 +123,7 @@ export const legend = (
                 "max-width": `${overRect.width - offset * 2}px`,
                 "max-height": `${overRect.height - offset * 2}px`,
                 "z-index": containerProps.zIndex,
-                "pointer-events": "auto" as const,
+                "pointer-events": "none" as const,
                 overflow: "auto" as const,
                 ...containerProps.style,
               };
