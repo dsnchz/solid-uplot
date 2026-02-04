@@ -19,6 +19,7 @@
     "pkg:changeset": "changeset",
     "pkg:version": "changeset version",
     "pkg:publish": "bun run build && changeset publish",
+    "start": "bun run dev",
     "test": "bun run --filter @dschz/solid-uplot test",
     "test:cov": "bun run --filter @dschz/solid-uplot test:cov",
     "test:e2e": "bun run --filter e2e test:e2e",

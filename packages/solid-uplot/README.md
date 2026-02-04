@@ -33,6 +33,30 @@ yarn install solid-js uplot @dschz/solid-uplot
 bun install solid-js uplot @dschz/solid-uplot
 ```
 
+## 🎮 Live Demo
+
+This repo ships with a **live, running playground** — a full showcase of every feature in the library. It's the fastest way to see `solid-uplot` in action and explore real, working examples of charts, plugins, responsive sizing, and external integrations.
+
+### Running the Playground
+
+```bash
+git clone https://github.com/dsnchz/solid-uplot.git
+cd solid-uplot
+
+# Install dependencies
+bun install
+
+# Start the playground
+bun start
+```
+
+The playground runs at `http://localhost:3000` and includes interactive demos for:
+
+- All built-in plugins (cursor, tooltip, legend, focus series)
+- Responsive and auto-resize chart patterns
+- Custom plugin development
+- External component integration via the plugin bus
+
 ## 📁 Package Structure
 
 This package provides three main export paths for different functionality:
@@ -185,6 +209,29 @@ import { AutoSizer } from "@dschz/solid-auto-sizer";
 <AutoSizer>
   {({ width, height }) => <SolidUplot width={width} height={height} data={data} />}
 </AutoSizer>;
+```
+
+Alternatively, you can use [`createElementSize`](https://github.com/solidjs-community/solid-primitives/tree/main/packages/resize-observer) from `@solid-primitives/resize-observer` for a signal-based approach:
+
+```bash
+npm install @solid-primitives/resize-observer
+```
+
+```tsx
+import { createElementSize } from "@solid-primitives/resize-observer";
+
+const ResponsiveChart = () => {
+  let container!: HTMLDivElement;
+  const size = createElementSize(() => container);
+
+  return (
+    <div style={{ width: "100%", height: "400px" }}>
+      <div ref={container} style={{ width: "100%", height: "100%" }}>
+        <SolidUplot data={data} width={size.width ?? 0} height={size.height ?? 0} series={series} />
+      </div>
+    </div>
+  );
+};
 ```
 
 ## 🔌 Enhanced Plugin System
@@ -720,55 +767,6 @@ const Dashboard = () => {
   );
 };
 ```
-
-## 🎮 Interactive Playground
-
-This library includes a comprehensive playground application that demonstrates all features and provides interactive examples. The playground showcases:
-
-- **Basic Charts**: Simple line charts with different configurations
-- **Plugin Examples**: All built-in plugins working together
-- **Legend Showcase**: Various legend patterns and interactions
-- **Responsive Sizing**: Auto-resize and manual sizing examples
-- **Custom Plugins**: Examples of creating your own plugins
-- **External Integration**: Charts interacting with external components
-
-### Running the Playground Locally
-
-To explore the playground and see the library in action:
-
-```bash
-# Clone the repository
-git clone https://github.com/dsnchz/solid-uplot.git
-cd solid-uplot
-
-# Install dependencies
-npm install
-# or
-pnpm install
-# or
-yarn install
-# or
-bun install
-
-# Start the playground development server
-npm run start
-# or
-pnpm start
-# or
-yarn start
-# or
-bun start
-```
-
-The playground will be available at `http://localhost:3000` and includes:
-
-- **Live code examples** with syntax highlighting
-- **Interactive demos** you can modify in real-time
-- **Performance comparisons** between different configurations
-- **Best practices** and common patterns
-- **Plugin development examples** with step-by-step guides
-
-The playground source code also serves as a comprehensive reference for implementing various chart patterns and plugin combinations.
 
 ## 🤝 Contributing
 
