@@ -1,5 +1,11 @@
 # @dschz/solid-uplot
 
+## 0.5.2
+
+### Patch Changes
+
+- Remove pointer-events from legend root; Update playground examples
+
 ## 0.5.1
 
 ### Patch Changes
