@@ -1,6 +1,5 @@
 import "uplot/dist/uPlot.min.css";
 
-import { mergeRefs, Ref } from "@solid-primitives/refs";
 import {
   createEffect,
   createMemo,
@@ -9,6 +8,7 @@ import {
   mergeProps,
   onCleanup,
   type ParentProps,
+  type Ref,
   splitProps,
   untrack,
 } from "solid-js";
@@ -281,8 +281,8 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
             hasWarnedZeroHeight = true;
             console.warn(
               "[SolidUplot] autoResize observed 0px height. " +
-                "Ensure the parent container has an explicit height " +
-                "or is within a flex/grid layout that provides height.",
+              "Ensure the parent container has an explicit height " +
+              "or is within a flex/grid layout that provides height.",
             );
           }
 
@@ -311,6 +311,7 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
   return (
     <div
       id="solid-uplot-root"
+      ref={local.ref}
       class={classes()}
       style={{
         display: "flex",
@@ -326,7 +327,7 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
     >
       {local.children}
       <div
-        ref={mergeRefs(local.ref, (el) => (container = el))}
+        ref={container}
         class="solid-uplot-chart"
         style={{
           position: "relative",

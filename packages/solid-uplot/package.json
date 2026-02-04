@@ -95,9 +95,6 @@
     "test:cov": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "@solid-primitives/refs": "^1.1.2"
-  },
   "peerDependencies": {
     "solid-js": ">=1.6.0",
     "uplot": ">=1.6.32"

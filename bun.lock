@@ -21,7 +21,7 @@
     },
     "apps/e2e": {
       "name": "e2e",
-      "version": "0.0.0",
+      "version": "0.0.1",
       "dependencies": {
         "@dschz/solid-auto-sizer": "^0.1.3",
         "@dschz/solid-uplot": "workspace:*",
@@ -41,7 +41,7 @@
     },
     "apps/playground": {
       "name": "playground",
-      "version": "0.0.0",
+      "version": "0.0.1",
       "dependencies": {
         "@dschz/solid-auto-sizer": "^0.1.3",
         "@dschz/solid-uplot": "workspace:*",
@@ -64,10 +64,7 @@
     },
     "packages/solid-uplot": {
       "name": "@dschz/solid-uplot",
-      "version": "0.4.0",
-      "dependencies": {
-        "@solid-primitives/refs": "^1.1.2",
-      },
+      "version": "0.5.0",
       "devDependencies": {
         "@dschz/tsconfig": "workspace:*",
         "@solidjs/testing-library": "^0.8.10",
@@ -379,8 +376,6 @@
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.57.1", "", { "os": "win32", "cpu": "x64" }, "sha512-mxRFDdHIWRxg3UfIIAwCm6NzvxG0jDX/wBN6KsQFTvKFqqg9vTrWUE68qEjHt19A5wwx5X5aUi2zuZT7YR0jrA=="],
 
     "@solid-primitives/event-listener": ["@solid-primitives/event-listener@2.4.3", "", { "dependencies": { "@solid-primitives/utils": "^6.3.2" }, "peerDependencies": { "solid-js": "^1.6.12" } }, "sha512-h4VqkYFv6Gf+L7SQj+Y6puigL/5DIi7x5q07VZET7AWcS+9/G3WfIE9WheniHWJs51OEkRB43w6lDys5YeFceg=="],
-
-    "@solid-primitives/refs": ["@solid-primitives/refs@1.1.2", "", { "dependencies": { "@solid-primitives/utils": "^6.3.2" }, "peerDependencies": { "solid-js": "^1.6.12" } }, "sha512-K7tf2thy7L+YJjdqXspXOg5xvNEOH8tgEWsp0+1mQk3obHBRD6hEjYZk7p7FlJphSZImS35je3UfmWuD7MhDfg=="],
 
     "@solid-primitives/resize-observer": ["@solid-primitives/resize-observer@2.1.3", "", { "dependencies": { "@solid-primitives/event-listener": "^2.4.3", "@solid-primitives/rootless": "^1.5.2", "@solid-primitives/static-store": "^0.1.2", "@solid-primitives/utils": "^6.3.2" }, "peerDependencies": { "solid-js": "^1.6.12" } }, "sha512-zBLje5E06TgOg93S7rGPldmhDnouNGhvfZVKOp+oG2XU8snA+GoCSSCz1M+jpNAg5Ek2EakU5UVQqL152WmdXQ=="],
 
