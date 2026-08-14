@@ -2,18 +2,18 @@
   "name": "solid-uplot",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
+  "type": "module",
   "scripts": {
     "build": "bun run --filter @dschz/solid-uplot build",
     "build:watch": "bun run --filter @dschz/solid-uplot build:watch",
     "dev": "bun run --filter playground dev",
     "dev:e2e": "bun run --filter e2e dev",
-    "format": "prettier . --check",
-    "format:fix": "prettier . --write",
+    "format": "oxfmt --check",
+    "format:fix": "oxfmt",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "pkg:changeset": "changeset",
@@ -36,7 +36,7 @@
     "eslint-plugin-solid": "0.15.0",
     "globals": "17.11.0",
     "jiti": "2.7.0",
-    "prettier": "3.9.6",
+    "oxfmt": "0.63.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.67.0"
   }

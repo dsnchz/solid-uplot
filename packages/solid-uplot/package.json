@@ -2,9 +2,6 @@
   "name": "@dschz/solid-uplot",
   "version": "0.5.2",
   "description": "SolidJS wrapper for uPlot — ultra-fast, tiny time-series & charting library",
-  "type": "module",
-  "author": "Daniel Sanchez <dsanc89@pm.me>",
-  "license": "MIT",
   "keywords": [
     "analytics",
     "canvas",
@@ -20,9 +17,9 @@
     "lightweight",
     "lightweight-charts",
     "metrics",
+    "plotting",
     "plugin",
     "plugins",
-    "plotting",
     "real-time",
     "solid",
     "solid-chart",
@@ -40,24 +37,34 @@
     "visualization"
   ],
   "homepage": "https://github.com/dsnchz/solid-uplot#readme",
+  "bugs": {
+    "url": "https://github.com/dsnchz/solid-uplot/issues"
+  },
+  "license": "MIT",
+  "author": "Daniel Sanchez <dsanc89@pm.me>",
   "repository": {
     "type": "git",
     "url": "https://github.com/dsnchz/solid-uplot.git",
     "directory": "packages/solid-uplot"
   },
-  "bugs": {
-    "url": "https://github.com/dsnchz/solid-uplot/issues"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
   "files": [
     "dist"
   ],
+  "type": "module",
   "main": "./dist/index/index.js",
   "module": "./dist/index/index.js",
-  "types": "./dist/index/index.d.ts",
   "browser": {},
+  "types": "./dist/index/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "plugins": [
+        "./dist/plugins/index.d.ts"
+      ],
+      "utils": [
+        "./dist/utils/index.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "import": {
@@ -78,15 +85,8 @@
       }
     }
   },
-  "typesVersions": {
-    "*": {
-      "plugins": [
-        "./dist/plugins/index.d.ts"
-      ],
-      "utils": [
-        "./dist/utils/index.d.ts"
-      ]
-    }
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsup",
@@ -94,10 +94,6 @@
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
-  },
-  "peerDependencies": {
-    "solid-js": ">=1.6.0",
-    "uplot": ">=1.6.32"
   },
   "devDependencies": {
     "@dschz/tsconfig": "workspace:*",
@@ -118,5 +114,9 @@
     "vite": "^7.2.4",
     "vite-plugin-solid": "^2.11.10",
     "vitest": "^4.0.13"
+  },
+  "peerDependencies": {
+    "solid-js": ">=1.6.0",
+    "uplot": ">=1.6.32"
   }
 }

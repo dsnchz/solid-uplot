@@ -27,7 +27,7 @@ export default tseslint.config(
       parserOptions: {
         sourceType: "module",
         projectService: {
-          allowDefaultProject: ["apps/e2e/__tests__/*.ts", "eslint.config.ts"],
+          allowDefaultProject: ["apps/e2e/__tests__/*.ts", "eslint.config.ts", "oxfmt.config.ts"],
         },
         ecmaFeatures: {
           jsx: true,
