@@ -46,6 +46,9 @@ cd solid-uplot
 # Install dependencies
 bun install
 
+# Build library
+bun run build
+
 # Start the playground
 bun dev
 ```
