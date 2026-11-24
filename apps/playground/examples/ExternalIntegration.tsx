@@ -1,13 +1,8 @@
 import { createPluginBus, SolidUplot } from "@dschz/solid-uplot";
-import {
-  cursor,
-  type CursorPluginMessageBus,
-  focusSeries,
-  type FocusSeriesPluginMessageBus,
-} from "@dschz/solid-uplot/plugins";
+import { focusSeries, type FocusSeriesPluginMessageBus } from "@dschz/solid-uplot/plugins";
 import { type Component, For } from "solid-js";
 
-const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+const bus = createPluginBus<FocusSeriesPluginMessageBus>();
 
 const DataGrid: Component<{
   bus: ReturnType<typeof createPluginBus<FocusSeriesPluginMessageBus>>;
@@ -89,7 +84,7 @@ export const ExternalIntegration: Component = () => {
             stroke: "#ff7f0e",
           },
         ]}
-        plugins={[cursor(), focusSeries()]}
+        plugins={[focusSeries()]}
         pluginBus={bus}
       />
     </div>

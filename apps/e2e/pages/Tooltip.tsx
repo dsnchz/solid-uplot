@@ -1,14 +1,9 @@
 import { createPluginBus, SolidUplot } from "@dschz/solid-uplot";
-import {
-  cursor,
-  type CursorPluginMessageBus,
-  tooltip,
-  type TooltipProps,
-} from "@dschz/solid-uplot/plugins";
+import { tooltip, type TooltipProps } from "@dschz/solid-uplot/plugins";
 import { type Component, createEffect, createSignal, For, Show } from "solid-js";
 
-const bus1 = createPluginBus<CursorPluginMessageBus>();
-const bus2 = createPluginBus<CursorPluginMessageBus>();
+const bus1 = createPluginBus();
+const bus2 = createPluginBus();
 
 /**
  * Minimal tooltip component with known dimensions for predictable E2E assertions.
@@ -96,7 +91,6 @@ export const Tooltip: Component = () => {
             scales={{ x: { time: false } }}
             series={chartSeries}
             plugins={[
-              cursor(),
               tooltip(TestTooltip, {
                 id: "test-tooltip-absolute",
                 placement: "top-right",
@@ -158,7 +152,6 @@ export const Tooltip: Component = () => {
                   scales={{ x: { time: false } }}
                   series={chartSeries}
                   plugins={[
-                    cursor(),
                     tooltip(TestTooltip, {
                       id: "test-tooltip-fixed",
                       placement: "top-right",

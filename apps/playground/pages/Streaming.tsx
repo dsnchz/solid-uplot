@@ -1,11 +1,5 @@
 import { createPluginBus, SolidUplot } from "@dschz/solid-uplot";
-import {
-  cursor,
-  type CursorPluginMessageBus,
-  focusSeries,
-  type FocusSeriesPluginMessageBus,
-  tooltip,
-} from "@dschz/solid-uplot/plugins";
+import { focusSeries, type FocusSeriesPluginMessageBus, tooltip } from "@dschz/solid-uplot/plugins";
 import { createEffect, createSignal, onCleanup } from "solid-js";
 import uPlot from "uplot";
 
@@ -60,7 +54,7 @@ export const Streaming = () => {
   const [currentOptions1] = createSignal(chartOptions1);
 
   // Shared plugin bus for all charts
-  const pluginBus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>({
+  const pluginBus = createPluginBus<FocusSeriesPluginMessageBus>({
     cursor: {
       sourceId: undefined,
       state: {
@@ -70,7 +64,7 @@ export const Streaming = () => {
     },
   });
 
-  const plugins = [cursor(), focusSeries()];
+  const plugins = [focusSeries()];
 
   // Streaming data generation for first chart
   createEffect(() => {

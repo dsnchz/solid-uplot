@@ -52,7 +52,7 @@ bun dev
 
 The playground runs at `http://localhost:3000` and includes interactive demos for:
 
-- All built-in plugins (cursor, tooltip, legend, focus series)
+- All built-in plugins (tooltip, legend, focus series) on top of the built-in cursor tracking
 - Responsive and auto-resize chart patterns
 - Custom plugin development
 - External component integration via the plugin bus
@@ -68,28 +68,44 @@ Core components and plugin system:
 ```tsx
 import { SolidUplot, createPluginBus } from "@dschz/solid-uplot";
 import type {
+  ChildrenPlacement,
+  CursorPluginMessage,
+  CursorPluginMessageBus,
+  OnCreateMeta,
+  OnCursorMoveParams,
+  SolidUplotOptions,
+  SolidUplotPlugin,
   SolidUplotPluginBus,
+  SolidUplotProps,
   UplotPluginFactory,
   UplotPluginFactoryContext,
+  VoidStruct,
 } from "@dschz/solid-uplot";
 ```
 
+**Cursor tracking is built in.** Cursor position is the core primitive every chart plugin builds on, so `SolidUplot` installs it on every chart, ahead of all other plugins. Every plugin — built in or your own — can read `bus.data.cursor` (see [Built-in Cursor Tracking](#built-in-cursor-tracking)). There is no plugin to add.
+
 ### `@dschz/solid-uplot/plugins`
 
-This export path provides four plugins (three of which can be considered primitives).
+This export path provides three plugins:
 
-- `cursor`: transmits cursor position data
 - `focusSeries`: transmits which series are visually emphasized
 - `tooltip`: plugin that allows you to present a custom JSX tooltip around the cursor
 - `legend`: plugin that allows you to present a custom JSX component as your legend over the canvas drawing area.
 
 ```tsx
-import { cursor, tooltip, legend, focusSeries } from "@dschz/solid-uplot/plugins";
+import { tooltip, legend, focusSeries } from "@dschz/solid-uplot/plugins";
 import type {
-  CursorPluginMessageBus,
+  FocusSeriesPluginMessage,
   FocusSeriesPluginMessageBus,
+  FocusSeriesPluginOptions,
+  SeriesFocusTarget,
   TooltipProps,
+  TooltipPluginOptions,
+  TooltipCursorPlacement,
   LegendProps,
+  LegendPluginOptions,
+  LegendPlacement,
 } from "@dschz/solid-uplot/plugins";
 ```
 
@@ -104,15 +120,15 @@ import {
   getColorString,
   getNewCalendarDayIndices,
 } from "@dschz/solid-uplot/utils";
-import type { SeriesDatum, CursorData } from "@dschz/solid-uplot/utils";
+import type { SeriesDatum, CursorData, GetSeriesDataOptions } from "@dschz/solid-uplot/utils";
 ```
 
 ## 🚀 Quick Start
 
 ```tsx
-import { SolidUplot, createPluginBus } from "@dschz/solid-uplot";
-import { cursor, tooltip, legend } from "@dschz/solid-uplot/plugins";
-import type { CursorPluginMessageBus, TooltipProps, LegendProps } from "@dschz/solid-uplot/plugins";
+import { SolidUplot } from "@dschz/solid-uplot";
+import { tooltip, legend } from "@dschz/solid-uplot/plugins";
+import type { TooltipProps, LegendProps } from "@dschz/solid-uplot/plugins";
 
 // Create a tooltip component
 const MyTooltip = (props: TooltipProps) => (
@@ -152,8 +168,6 @@ const MyLegend = (props: LegendProps) => (
 );
 
 const MyChart = () => {
-  const bus = createPluginBus<CursorPluginMessageBus>();
-
   return (
     <SolidUplot
       data={[
@@ -168,16 +182,13 @@ const MyChart = () => {
         { label: "Series 1", stroke: "#1f77b4" },
         { label: "Series 2", stroke: "#ff7f0e" },
       ]}
-      plugins={[
-        cursor(),
-        tooltip(MyTooltip),
-        legend(MyLegend, { placement: "top-right", pxOffset: 12 }),
-      ]}
-      pluginBus={bus}
+      plugins={[tooltip(MyTooltip), legend(MyLegend, { placement: "top-right", pxOffset: 12 })]}
     />
   );
 };
 ```
+
+No plugin bus and no cursor plugin needed: every chart tracks the cursor itself and gives its plugins a bus of its own. Create a bus with `createPluginBus()` only to share it between charts or with components outside the chart (see [Plugin Bus Architecture](#plugin-bus-architecture)).
 
 ## 📏 Responsive Sizing
 
@@ -247,20 +258,36 @@ The Plugin Bus System enables plugins to communicate with each other and externa
 - **Decoupled components**: Plugins can interact without direct dependencies
 - **Extensible**: Easy to add new plugins that integrate with existing ones
 
-### Built-in Plugins
+Every chart has a bus. A chart without a `pluginBus` prop creates its own, so plugins work on a single chart with no setup. Create one with `createPluginBus()` and pass it as `pluginBus` only to share plugin state between charts (mirrored focus, synced tooltips; see [Synced Charts](#synced-charts)) or to read and write it from components outside the chart (see [External Component Integration](#external-component-integration)).
 
-#### Cursor Plugin
+### Built-in Cursor Tracking
 
-Tracks cursor position and interaction state across charts:
+Cursor position is the core primitive: tooltips, focus and your own plugins all need it. So it is not a plugin you add — `SolidUplot` installs cursor tracking on every chart, before any other plugin, and publishes it on the bus as `bus.data.cursor` (a `CursorPluginMessage`):
 
 ```tsx
-import { cursor } from "@dschz/solid-uplot/plugins";
-import type { CursorPluginMessageBus } from "@dschz/solid-uplot/plugins";
-
-const cursorPlugin = cursor();
+bus.data.cursor.sourceId; // id of the chart the pointer is over (undefined when over none)
+bus.data.cursor.state[chartId]; // CursorData for that chart (undefined when not over a point)
 ```
 
-The cursor plugin provides cursor position data that other plugins can consume through the bus.
+- `sourceId`: the id of the chart the pointer is currently over; `undefined` when it is over none of the charts sharing the bus.
+- `state[plotId]`: the `CursorData` of each chart on the bus, keyed by chart id (`u.root.id`: the chart's `id` prop, or a generated one). `CursorData` holds `plotId`, `idx` (closest data index), `xValue`, `position` (`left`/`top` in CSS pixels, relative to the plotting area) and `visible`.
+
+`bus.data.cursor` is always defined (`createPluginBus()` seeds it with `{ state: {} }`), and because cursor tracking runs first, a plugin's `setCursor` hook already sees the position for the event being handled:
+
+```tsx
+import type { UplotPluginFactory } from "@dschz/solid-uplot";
+
+const logCursor: UplotPluginFactory = ({ bus }) => ({
+  hooks: {
+    setCursor: (u) => {
+      const cursor = bus.data.cursor.state[u.root.id]; // CursorData | undefined
+      if (cursor) console.log(cursor.idx, cursor.xValue, cursor.position);
+    },
+  },
+});
+```
+
+### Built-in Plugins
 
 #### Focus Series Plugin
 
@@ -271,7 +298,7 @@ import { focusSeries } from "@dschz/solid-uplot/plugins";
 import type { FocusSeriesPluginMessageBus } from "@dschz/solid-uplot/plugins";
 
 const focusPlugin = focusSeries({
-  pxThreshold: 15, // Distance threshold for focusing (default: 15)
+  pxThreshold: 15, // Distance threshold for focusing (default: 5)
 });
 ```
 
@@ -338,7 +365,7 @@ import type { LegendProps } from "@dschz/solid-uplot/plugins";
 
 const MyLegend: Component<LegendProps> = (props) => {
   // Access cursor data for interactive features
-  const cursorVisible = () => props.bus.data.cursor?.state[props.u.root.id]?.visible;
+  const cursorVisible = () => props.bus.data.cursor.state[props.u.root.id]?.visible;
 
   return (
     <div
@@ -400,24 +427,22 @@ const legendPlugin = legend(MyLegend, {
 
 ### Plugin Bus Type Safety
 
-When using multiple plugins, ensure type safety by properly typing the plugin bus:
+When you create a bus yourself (to share it), type it with the message types of the plugins that use it. The cursor state is always included, so it never needs to be listed:
 
 ```tsx
 import { createPluginBus } from "@dschz/solid-uplot";
-import type {
-  CursorPluginMessageBus,
-  FocusSeriesPluginMessageBus,
-} from "@dschz/solid-uplot/plugins";
+import type { FocusSeriesPluginMessageBus } from "@dschz/solid-uplot/plugins";
 
-// Create a bus that includes all plugin message types
-const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+// Create a bus that includes all plugin message types (cursor state is built in)
+const bus = createPluginBus<FocusSeriesPluginMessageBus>();
 
 const MyChart = () => {
   return (
     <SolidUplot
       data={data}
+      series={series}
       pluginBus={bus}
-      plugins={[cursor(), focusSeries(), tooltip(MyTooltip), legend(MyLegend)]}
+      plugins={[focusSeries(), tooltip(MyTooltip), legend(MyLegend)]}
     />
   );
 };
@@ -429,7 +454,6 @@ The plugin system is open to extension. When authoring plugins for public consum
 
 ```tsx
 import type { UplotPluginFactory } from "@dschz/solid-uplot";
-import type { CursorPluginMessageBus } from "@dschz/solid-uplot/plugins";
 
 // 1. Define your plugin's message type
 export type MyPluginMessage = {
@@ -442,28 +466,58 @@ export type MyPluginMessageBus = {
   myPlugin?: MyPluginMessage;
 };
 
-// 3. Export your plugin factory
-export const myPlugin = (
-  options = {},
-): UplotPluginFactory<CursorPluginMessageBus & MyPluginMessageBus> => {
-  return ({ bus }) => {
-    if (!bus) {
-      console.warn("[my-plugin]: A plugin bus is required");
-      return { hooks: {} };
-    }
+// 3. Export your plugin factory. Every chart passes a bus, and `bus.data.cursor` is
+// always there, so the plugin needs no bus check and no cursor type.
+export const myPlugin = (options = {}): UplotPluginFactory<MyPluginMessageBus> => {
+  return ({ bus }) => ({
+    hooks: {
+      ready: () => {
+        // Initialize plugin state
+        bus.setData("myPlugin", { value: 0, timestamp: Date.now() });
+      },
+      setCursor: (u) => {
+        // The built-in cursor state is current for this event
+        const cursor = bus.data.cursor.state[u.root.id];
+        if (!cursor) return;
+
+        // Solid store path setters: derive a field from its previous value, or merge an object
+        bus.setData("myPlugin", "value", (prev) => prev + 1);
+        bus.setData("myPlugin", { timestamp: Date.now() });
+      },
+      destroy: () => {
+        // Clear plugin state
+        bus.setData("myPlugin", undefined);
+      },
+    },
+  });
+};
+```
+
+Use it like a built-in plugin; a single chart needs no bus: `<SolidUplot data={data} series={series} plugins={[myPlugin()]} />`. To read `bus.data.myPlugin` from outside the chart, create the bus with `createPluginBus<MyPluginMessageBus>()` and pass it as `pluginBus`.
+
+### App Context in Plugin UI
+
+Tooltip and legend components render under the `<SolidUplot>` component's owner, so `useContext` inside them sees your app's providers (theme, i18n, stores, ...) like any other child component.
+
+Plugin factories receive that owner as `ctx.owner`. A custom plugin that mounts Solid UI renders it under the owner to get the same behavior:
+
+```tsx
+import { runWithOwner } from "solid-js";
+import { render } from "solid-js/web";
+import type { UplotPluginFactory } from "@dschz/solid-uplot";
+
+export const overlay = (): UplotPluginFactory => {
+  return ({ owner }) => {
+    let dispose: (() => void) | undefined;
 
     return {
       hooks: {
         ready: (u) => {
-          // Initialize plugin state
-          bus.setData("myPlugin", {
-            value: 0,
-            timestamp: Date.now(),
-          });
+          // <MyOverlay /> can call useContext and see the app's providers
+          dispose = runWithOwner(owner ?? null, () => render(() => <MyOverlay />, u.over));
         },
-        setData: (u) => {
-          // Update plugin state
-          bus.setData("myPlugin", "value", (prev) => prev + 1);
+        destroy: () => {
+          dispose?.();
         },
       },
     };
@@ -473,12 +527,13 @@ export const myPlugin = (
 
 ### External Component Integration
 
-The plugin bus enables powerful integrations between charts and external components:
+The plugin bus enables powerful integrations between charts and external components. When a component outside the chart reads or writes plugin state, create the bus yourself and pass it to both:
 
 ```tsx
 import { createPluginBus } from "@dschz/solid-uplot";
 import type { FocusSeriesPluginMessageBus } from "@dschz/solid-uplot/plugins";
 
+// Created outside the chart so DataGrid can write to it
 const bus = createPluginBus<FocusSeriesPluginMessageBus>();
 
 // External component that can trigger series focus
@@ -498,7 +553,7 @@ const MyDashboard = () => {
   return (
     <div>
       <DataGrid bus={bus} />
-      <SolidUplot data={data} pluginBus={bus} plugins={[focusSeries()]} />
+      <SolidUplot data={data} series={series} pluginBus={bus} plugins={[focusSeries()]} />
     </div>
   );
 };
@@ -542,14 +597,19 @@ type SolidUplotProps<T extends VoidStruct = VoidStruct> = SolidUplotOptions<T> &
 // Configuration options extending uPlot.Options with SolidJS enhancements
 type SolidUplotOptions<T extends VoidStruct = VoidStruct> = Omit<
   uPlot.Options,
-  "plugins" | "width" | "height"
+  "plugins" | "width" | "height" | "data"
 > & {
   // Chart dimensions
   width?: number; // default: 600
   height?: number; // default: 300
 
+  // Chart data
+  data?: uPlot.AlignedData | number[][];
+
   // Plugin configuration
   plugins?: SolidUplotPlugin<T>[];
+  // Optional: omit it and the chart uses its own bus. Pass one to share plugin
+  // state between charts or with components outside the chart.
   pluginBus?: SolidUplotPluginBus<T>;
 };
 
@@ -560,50 +620,110 @@ type SolidUplotPlugin<T extends VoidStruct = VoidStruct> = uPlot.Plugin | UplotP
 ### Plugin Bus
 
 ```tsx
-// Plugin bus type (derived from createPluginBus return type)
-type SolidUplotPluginBus<T extends VoidStruct = VoidStruct> = ReturnType<typeof createPluginBus<T>>;
+// Plugin bus: a Solid store. Every bus carries the built-in cursor state on top of T.
+type SolidUplotPluginBus<T extends VoidStruct = VoidStruct> = {
+  readonly data: Store<T & CursorPluginMessageBus>;
+  readonly setData: SetStoreFunction<T & CursorPluginMessageBus>;
+};
 
-// Create a plugin bus
+// Create a plugin bus (seeded with `cursor: { state: {} }`)
 const createPluginBus: <T extends VoidStruct = VoidStruct>(
-  initialData?: T,
+  initialData?: Omit<T, "cursor"> & Partial<CursorPluginMessageBus>,
 ) => SolidUplotPluginBus<T>;
+
+// Built-in cursor state, at `bus.data.cursor`
+type CursorPluginMessage = {
+  sourceId?: string; // id of the chart the pointer is over
+  state: { [plotId: string]: CursorData | undefined };
+};
+
+type CursorPluginMessageBus = { cursor: CursorPluginMessage };
+
+// Context passed to every plugin factory
+type UplotPluginFactoryContext<T extends VoidStruct = VoidStruct> = {
+  // The `pluginBus` prop, or the chart's own bus when none is passed. Always defined.
+  readonly bus: SolidUplotPluginBus<T>;
+  // Owner of the <SolidUplot> component: mount plugin UI under it to see app context
+  readonly owner?: Owner | null;
+};
+
+// Plugin factory: receives the context, returns a standard uPlot plugin
+type UplotPluginFactory<T extends VoidStruct = VoidStruct> = (
+  ctx: UplotPluginFactoryContext<T>,
+) => uPlot.Plugin;
 ```
 
 ### Built-in Plugin Options
 
 ```tsx
-// Cursor Plugin
-const cursor = (): UplotPluginFactory<CursorPluginMessageBus>;
-
 // Focus Series Plugin
-const focusSeries = (options?: {
-  pxThreshold?: number; // default: 15
-}): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus>;
+const focusSeries = (
+  options?: FocusSeriesPluginOptions,
+): UplotPluginFactory<FocusSeriesPluginMessageBus>;
+
+type FocusSeriesPluginOptions = {
+  pxThreshold?: number; // default: 5
+  unfocusedAlpha?: number; // default: 0.1
+  focusedAlpha?: number; // default: 1
+  rebuildPaths?: boolean; // default: false
+  // Extra redraw condition for the charts that are not the cursor source
+  shouldRedrawOnBusUpdate?: (params: {
+    u: uPlot;
+    cursor: CursorPluginMessage;
+    focusSeries: FocusSeriesPluginMessage | undefined;
+  }) => boolean;
+};
 
 // Tooltip Plugin
 const tooltip = (
   Component: Component<TooltipProps>,
-  options?: {
-    placement?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
-    id?: string;
-    class?: string;
-    style?: JSX.CSSProperties;
-    zIndex?: number; // default: 20
-  }
-): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus>;
+  options?: TooltipPluginOptions,
+): UplotPluginFactory<FocusSeriesPluginMessageBus>;
+
+type TooltipCursorPlacement = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
+type TooltipPluginOptions = {
+  placement?: TooltipCursorPlacement; // default: "top-left"
+  fixed?: boolean; // fixed positioning, for charts in dialogs/modals (default: false)
+  onPositionCalculated?: (
+    position: { left: number; top: number },
+    placement: TooltipCursorPlacement,
+  ) => { left: number; top: number };
+  id?: string; // default: "solid-uplot-tooltip-root"
+  class?: string;
+  style?: JSX.CSSProperties;
+  zIndex?: number; // default: 20
+};
+
+type TooltipProps = {
+  u: uPlot;
+  cursor: CursorData;
+  seriesData: SeriesDatum[];
+  focusedSeries?: FocusSeriesPluginMessage;
+};
 
 // Legend Plugin
 const legend = (
   Component: Component<LegendProps>,
-  options?: {
-    placement?: "top-left" | "top-right"; // default: "top-left"
-    pxOffset?: number; // default: 8
-    id?: string;
-    class?: string;
-    style?: JSX.CSSProperties;
-    zIndex?: number; // default: 10
-  }
-): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus>;
+  options?: LegendPluginOptions,
+): UplotPluginFactory<FocusSeriesPluginMessageBus>;
+
+type LegendPlacement = "top-left" | "top-right";
+
+type LegendPluginOptions = {
+  placement?: LegendPlacement; // default: "top-left"
+  pxOffset?: number; // default: 8
+  id?: string; // default: "solid-uplot-legend-root"
+  class?: string;
+  style?: JSX.CSSProperties;
+  zIndex?: number; // default: 10
+};
+
+type LegendProps = {
+  u: uPlot;
+  seriesData: SeriesDatum[];
+  bus: SolidUplotPluginBus<FocusSeriesPluginMessageBus>;
+};
 ```
 
 ## 📚 Examples
@@ -639,14 +759,9 @@ const BasicChart = () => {
 ### Chart with All Plugins
 
 ```tsx
-import { SolidUplot, createPluginBus } from "@dschz/solid-uplot";
-import { cursor, tooltip, legend, focusSeries } from "@dschz/solid-uplot/plugins";
-import type {
-  CursorPluginMessageBus,
-  FocusSeriesPluginMessageBus,
-  TooltipProps,
-  LegendProps,
-} from "@dschz/solid-uplot/plugins";
+import { SolidUplot } from "@dschz/solid-uplot";
+import { tooltip, legend, focusSeries } from "@dschz/solid-uplot/plugins";
+import type { TooltipProps, LegendProps } from "@dschz/solid-uplot/plugins";
 
 const MyTooltip: Component<TooltipProps> = (props) => (
   <div style={{ background: "white", padding: "8px", border: "1px solid #ccc" }}>
@@ -665,7 +780,7 @@ const MyTooltip: Component<TooltipProps> = (props) => (
 );
 
 const MyLegend: Component<LegendProps> = (props) => {
-  const cursorVisible = () => props.bus.data.cursor?.state[props.u.root.id]?.visible;
+  const cursorVisible = () => props.bus.data.cursor.state[props.u.root.id]?.visible;
 
   return (
     <div
@@ -695,9 +810,8 @@ const MyLegend: Component<LegendProps> = (props) => {
   );
 };
 
+// A single chart needs no plugin bus: it creates its own
 const FullFeaturedChart = () => {
-  const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
-
   return (
     <SolidUplot
       data={[
@@ -715,12 +829,10 @@ const FullFeaturedChart = () => {
         { label: "Expenses", stroke: "#2ca02c" },
       ]}
       plugins={[
-        cursor(),
         focusSeries({ pxThreshold: 20 }),
         tooltip(MyTooltip, { placement: "top-right" }),
         legend(MyLegend, { placement: "top-left", pxOffset: 12 }),
       ]}
-      pluginBus={bus}
     />
   );
 };
@@ -732,12 +844,7 @@ const FullFeaturedChart = () => {
 const ResponsiveChart = () => {
   return (
     <div style={{ width: "100%", height: "400px", border: "1px solid #ccc" }}>
-      <SolidUplot
-        autoResize={true}
-        data={data}
-        series={series}
-        plugins={[cursor(), tooltip(MyTooltip)]}
-      />
+      <SolidUplot autoResize={true} data={data} series={series} plugins={[tooltip(MyTooltip)]} />
     </div>
   );
 };
@@ -747,6 +854,7 @@ const ResponsiveChart = () => {
 
 ```tsx
 const Dashboard = () => {
+  // Created by the app, not the chart, so the buttons below can write focus to it
   const bus = createPluginBus<FocusSeriesPluginMessageBus>();
 
   const handleSeriesToggle = (seriesLabel: string) => {
@@ -762,11 +870,74 @@ const Dashboard = () => {
         <button onClick={() => handleSeriesToggle("Series 1")}>Focus Series 1</button>
         <button onClick={() => handleSeriesToggle("Series 2")}>Focus Series 2</button>
       </div>
-      <SolidUplot data={data} plugins={[focusSeries()]} pluginBus={bus} />
+      <SolidUplot data={data} series={series} plugins={[focusSeries()]} pluginBus={bus} />
     </div>
   );
 };
 ```
+
+### Synced Charts
+
+Charts that share a bus share plugin state: hovering one chart focuses the same series in all of them. Pair the shared bus with uPlot's cursor sync so every chart's cursor (and tooltip) follows along:
+
+```tsx
+import { SolidUplot, createPluginBus } from "@dschz/solid-uplot";
+import { focusSeries, tooltip } from "@dschz/solid-uplot/plugins";
+import type { FocusSeriesPluginMessageBus } from "@dschz/solid-uplot/plugins";
+
+const SyncedCharts = () => {
+  // One bus for both charts, so focus is mirrored across them
+  const bus = createPluginBus<FocusSeriesPluginMessageBus>();
+  const plugins = [focusSeries(), tooltip(MyTooltip)];
+  const cursor = { sync: { key: "dashboard" } };
+
+  return (
+    <div>
+      <SolidUplot
+        data={cpuData}
+        series={series}
+        cursor={cursor}
+        pluginBus={bus}
+        plugins={plugins}
+      />
+      <SolidUplot
+        data={memoryData}
+        series={series}
+        cursor={cursor}
+        pluginBus={bus}
+        plugins={plugins}
+      />
+    </div>
+  );
+};
+```
+
+## 🔄 Migrating from 0.5.x
+
+**`cursor()` is gone: cursor tracking is built in.** Cursor position is the core primitive every other plugin reads, so `SolidUplot` now installs it on every chart, ahead of all other plugins, instead of relying on you to add it (and add it first).
+
+- Delete `cursor()` from your `plugins` arrays; the import no longer exists.
+- Import `CursorPluginMessage` / `CursorPluginMessageBus` from `@dschz/solid-uplot` (they were in `@dschz/solid-uplot/plugins`). You rarely need them: every bus type includes the cursor state, so `createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>()` becomes `createPluginBus<FocusSeriesPluginMessageBus>()`.
+- `bus.data.cursor` is always defined; drop `?.` and `if (bus.data.cursor)` checks.
+- `pluginBus` is optional: a chart without one uses its own, so `tooltip()`, `legend()` and `focusSeries()` work on a single chart with no bus. Keep passing a bus to share it between charts or with components outside the chart.
+- Plugin factories always receive a bus (`ctx.bus` is no longer optional), so custom plugins can drop their `if (!bus)` guards. `SolidUplotPluginBus<T>` is a named type now (was `ReturnType<typeof createPluginBus<T>>`), and its `data` / `setData` are typed `T & CursorPluginMessageBus`.
+- `FocusSeriesPluginOptions` is no longer generic: drop its type argument.
+
+```tsx
+// 0.5.x
+const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+<SolidUplot
+  data={data}
+  series={series}
+  pluginBus={bus}
+  plugins={[cursor(), focusSeries(), tooltip(MyTooltip)]}
+/>;
+
+// 0.6.x: no cursor(), and a single chart needs no bus
+<SolidUplot data={data} series={series} plugins={[focusSeries(), tooltip(MyTooltip)]} />;
+```
+
+**New in this release**: app context inside tooltip and legend components and `ctx.owner` for custom plugins (see [App Context in Plugin UI](#app-context-in-plugin-ui)), the exported props and plugin option types, and the `./plugins` and `./utils` entry points on JSR.
 
 ## 🤝 Contributing
 

@@ -1,7 +1,5 @@
 import { createPluginBus, SolidUplot } from "@dschz/solid-uplot";
 import {
-  cursor,
-  type CursorPluginMessageBus,
   focusSeries,
   type FocusSeriesPluginMessageBus,
   legend,
@@ -11,7 +9,7 @@ import {
 } from "@dschz/solid-uplot/plugins";
 import { type Component, For } from "solid-js";
 
-const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+const bus = createPluginBus<FocusSeriesPluginMessageBus>();
 
 /**
  * Compact legend that shows series in a horizontal layout
@@ -66,7 +64,7 @@ const DetailedLegend: Component<LegendProps> = (props) => {
 const MinimalLegend: Component<LegendProps> = (props) => {
   // Check if tooltip is visible to provide subtle visual feedback
   const isTooltipVisible = () => {
-    const cursorData = props.bus.data.cursor?.state[props.u.root.id];
+    const cursorData = props.bus.data.cursor.state[props.u.root.id];
     return Boolean(cursorData);
   };
 
@@ -183,7 +181,6 @@ export const LegendShowcasePage: Component = () => {
               scales={{ x: { time: false } }}
               series={sampleSeries}
               plugins={[
-                cursor(),
                 tooltip(SimpleTooltip),
                 focusSeries({ pxThreshold: 15 }),
                 legend(CompactLegend, { placement: "top-left" }),
@@ -207,7 +204,6 @@ export const LegendShowcasePage: Component = () => {
               scales={{ x: { time: false } }}
               series={sampleSeries}
               plugins={[
-                cursor(),
                 tooltip(SimpleTooltip),
                 focusSeries({ pxThreshold: 15 }),
                 legend(DetailedLegend, { placement: "top-right" }),
@@ -232,7 +228,6 @@ export const LegendShowcasePage: Component = () => {
               scales={{ x: { time: false } }}
               series={sampleSeries}
               plugins={[
-                cursor(),
                 tooltip(SimpleTooltip),
                 focusSeries({ pxThreshold: 15 }),
                 legend(MinimalLegend, {

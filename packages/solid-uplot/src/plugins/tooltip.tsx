@@ -5,7 +5,6 @@ import uPlot from "uplot";
 import type { UplotPluginFactory } from "../createPluginBus";
 import type { CursorData } from "../utils/getCursorData";
 import { getSeriesData, type SeriesDatum } from "../utils/getSeriesData";
-import type { CursorPluginMessageBus } from "./cursor";
 import type { FocusSeriesPluginMessageBus } from "./focusSeries";
 import type { FocusSeriesPluginMessage } from "./focusSeries";
 
@@ -192,16 +191,12 @@ export type TooltipPluginOptions = TooltipRootProps & TooltipConfigOptions;
  * - Automatic cleanup and memory management
  *
  * **Requirements:**
- * - Requires the cursor plugin to be active for position tracking
- * - Needs a plugin bus for cursor data communication
+ * - Nothing extra: it reads the chart's built-in cursor state.
  *
  * **Usage:**
  * ```typescript
- * import { createPluginBus } from '@dschz/solid-uplot';
- * import { cursor, tooltip, type CursorPluginMessageBus, type TooltipProps } from '@dschz/solid-uplot/plugins';
+ * import { tooltip, type TooltipProps } from '@dschz/solid-uplot/plugins';
  * import type { Component } from 'solid-js';
- *
- * const bus = createPluginBus<CursorPluginMessageBus>();
  *
  * // Custom tooltip component MUST accept TooltipProps
  * const MyTooltip: Component<TooltipProps> = (props) => {
@@ -241,8 +236,7 @@ export type TooltipPluginOptions = TooltipRootProps & TooltipConfigOptions;
  *
  * <SolidUplot
  *   // ... other props
- *   plugins={[cursor(), tooltip(MyTooltip, { placement: "top-right" })]}
- *   pluginBus={bus}
+ *   plugins={[tooltip(MyTooltip, { placement: "top-right" })]}
  * />
  * ```
  *
@@ -259,13 +253,8 @@ export type TooltipPluginOptions = TooltipRootProps & TooltipConfigOptions;
 export const tooltip = (
   Component: Component<TooltipProps>,
   options: TooltipPluginOptions = {},
-): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus> => {
+): UplotPluginFactory<FocusSeriesPluginMessageBus> => {
   return ({ bus, owner }) => {
-    if (!bus) {
-      console.warn("[solid-uplot]: A plugin bus is required for the tooltip plugin");
-      return { hooks: {} };
-    }
-
     let tooltipRoot!: HTMLDivElement;
     let dispose: (() => void) | undefined;
 
@@ -286,7 +275,7 @@ export const tooltip = (
               options,
             );
 
-            const chartCursorData = () => bus.data.cursor?.state[u.root.id];
+            const chartCursorData = () => bus.data.cursor.state[u.root.id];
 
             const [tooltipOptions, containerProps] = splitProps(_options, [
               "placement",

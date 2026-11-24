@@ -1,7 +1,5 @@
 import { createPluginBus, SolidUplot } from "@dschz/solid-uplot";
 import {
-  cursor,
-  type CursorPluginMessageBus,
   focusSeries,
   type FocusSeriesPluginMessageBus,
   tooltip,
@@ -10,7 +8,7 @@ import {
 import type { SeriesDatum } from "@dschz/solid-uplot/utils";
 import { type Component, For } from "solid-js";
 
-const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+const bus = createPluginBus<FocusSeriesPluginMessageBus>();
 
 /**
  * Shared tooltip component for all synchronized charts.
@@ -69,7 +67,7 @@ const SyncedTooltip: Component<TooltipProps> = (props) => {
 
 export const MultiPlotPage: Component = () => {
   const syncKey = "multi-plot-sync";
-  const plugins = [cursor(), tooltip(SyncedTooltip), focusSeries({ pxThreshold: 10 })];
+  const plugins = [tooltip(SyncedTooltip), focusSeries({ pxThreshold: 10 })];
 
   return (
     <div class="container mx-auto max-w-6xl p-4">

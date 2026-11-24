@@ -1,7 +1,5 @@
 import { createPluginBus, SolidUplot } from "@dschz/solid-uplot";
 import {
-  cursor,
-  type CursorPluginMessageBus,
   focusSeries,
   type FocusSeriesPluginMessageBus,
   legend,
@@ -10,7 +8,7 @@ import {
 import type { CursorData, SeriesDatum } from "@dschz/solid-uplot/utils";
 import { type Component, For } from "solid-js";
 
-const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+const bus = createPluginBus<FocusSeriesPluginMessageBus>();
 
 const CustomTooltip: Component<{ u: uPlot; cursor: CursorData; seriesData: SeriesDatum[] }> = (
   props,
@@ -83,7 +81,6 @@ export const PluginShowcase: Component = () => {
         },
       ]}
       plugins={[
-        cursor(),
         tooltip(CustomTooltip),
         focusSeries({ pxThreshold: 5 }),
         legend(CustomLegend, { placement: "top-left" }),

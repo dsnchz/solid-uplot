@@ -1,7 +1,5 @@
 import { createPluginBus, SolidUplot } from "@dschz/solid-uplot";
 import {
-  cursor,
-  type CursorPluginMessageBus,
   focusSeries,
   type FocusSeriesPluginMessageBus,
   legend,
@@ -12,7 +10,7 @@ import {
 import type { SeriesDatum } from "@dschz/solid-uplot/utils";
 import { type Component, For } from "solid-js";
 
-const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+const bus = createPluginBus<FocusSeriesPluginMessageBus>();
 
 /**
  * Simple legend component that displays all series with their colors and labels in a compact horizontal layout.
@@ -21,7 +19,7 @@ const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus
 const SimpleLegend: Component<LegendProps> = (props) => {
   // Check if tooltip is visible by looking at cursor data from the bus
   const isTooltipVisible = () => {
-    const cursorData = bus.data.cursor?.state[props.u.root.id];
+    const cursorData = bus.data.cursor.state[props.u.root.id];
     return cursorData?.visible ?? false;
   };
 
@@ -52,7 +50,7 @@ const SimpleLegend: Component<LegendProps> = (props) => {
 /**
  * Custom tooltip component that demonstrates reactive integration with the plugin bus system.
  *
- * This component automatically receives the latest cursor data from the cursor plugin and
+ * This component automatically receives the latest cursor data from the built-in cursor tracking and
  * focus series data from the focusSeries plugin via the TooltipProps interface. The plugins
  * continuously update the bus with position, data index, and focus information, which the
  * tooltip plugin then passes to this component.
@@ -62,7 +60,7 @@ const SimpleLegend: Component<LegendProps> = (props) => {
  *
  * @param props - Standard TooltipProps containing:
  *   - u: The uPlot instance for accessing chart data
- *   - cursor: Latest cursor data from the cursor plugin (position, data index, etc.)
+ *   - cursor: Latest cursor data from the built-in cursor tracking (position, data index, etc.)
  *   - seriesData: Metadata about all series in the chart
  *   - focusedSeries: Optional focus series data from the focusSeries plugin
  */
@@ -140,11 +138,11 @@ export const PluginsPage: Component = () => {
         </a>
       </div>
       <p class="mb-4 text-gray-600">
-        The library provides four out-of-the-box plugins: <strong>cursor</strong>,{" "}
-        <strong>focusSeries</strong>, <strong>tooltip</strong>, and <strong>legend</strong>. This
-        example demonstrates all four plugins working together, powered by the plugin bus system, a
-        cornerstone feature of SolidUplot that integrates the power of Solid's reactivity system
-        with uPlot.
+        The library provides three out-of-the-box plugins: <strong>focusSeries</strong>,{" "}
+        <strong>tooltip</strong>, and <strong>legend</strong>. Cursor tracking is built into every
+        chart, so these plugins always have access to cursor data. This example demonstrates all
+        three plugins working together, powered by the plugin bus system, a cornerstone feature of
+        SolidUplot that integrates the power of Solid's reactivity system with uPlot.
       </p>
       <p class="mb-8 text-gray-600">
         The plugin bus enables type-safe communication between plugins and external components,
@@ -215,7 +213,6 @@ export const PluginsPage: Component = () => {
             },
           ]}
           plugins={[
-            cursor(),
             tooltip(CustomTooltip),
             focusSeries({ pxThreshold: 15 }),
             legend(SimpleLegend, { placement: "top-left" }),
@@ -226,10 +223,10 @@ export const PluginsPage: Component = () => {
 
       <div class="mt-8 grid gap-8 md:grid-cols-2">
         <div class="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 class="mb-4 text-xl font-semibold">Cursor Plugin</h2>
+          <h2 class="mb-4 text-xl font-semibold">Built-in Cursor Tracking</h2>
           <p class="text-gray-600">
-            Tracks cursor position and interaction state across the chart. Provides cursor data to
-            other plugins.
+            Every chart tracks cursor position and interaction state automatically, providing cursor
+            data to plugins through the plugin bus.
           </p>
         </div>
 

@@ -25,7 +25,7 @@ const BasicChart = () => {
 
 const pluginShowcaseCode = `
 import { SolidUplot } from "@dschz/solid-uplot";
-import { cursor, tooltip, focusSeries } from "@dschz/solid-uplot/plugins";
+import { tooltip, focusSeries } from "@dschz/solid-uplot/plugins";
 
 const PluginShowcase = () => {
   return (
@@ -34,7 +34,6 @@ const PluginShowcase = () => {
       width={600}
       height={400}
       plugins={[
-        cursor(),
         tooltip(MyTooltip),
         focusSeries(),
       ]}

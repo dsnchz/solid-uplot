@@ -1,4 +1,3 @@
-export { cursor, type CursorPluginMessage, type CursorPluginMessageBus } from "./cursor";
 export {
   focusSeries,
   type FocusSeriesPluginMessage,

@@ -1,15 +1,18 @@
 import { cleanup, render, waitFor } from "@solidjs/testing-library";
 import userEvent from "@testing-library/user-event";
 import type { Component } from "solid-js";
-import { createContext, createSignal, For, useContext } from "solid-js";
+import { createContext, createSignal, For, Show, useContext } from "solid-js";
 import uPlot from "uplot";
 import { afterEach, beforeEach, describe, expect, type MockInstance, test, vi } from "vitest";
 
-import { createPluginBus } from "../createPluginBus";
-import { cursor, type CursorPluginMessageBus } from "../plugins/cursor";
+import {
+  createPluginBus,
+  type SolidUplotPluginBus,
+  type UplotPluginFactory,
+} from "../createPluginBus";
 import { focusSeries, type FocusSeriesPluginMessageBus } from "../plugins/focusSeries";
 import { legend, type LegendProps } from "../plugins/legend";
-import { tooltip } from "../plugins/tooltip";
+import { tooltip, type TooltipProps } from "../plugins/tooltip";
 import { SolidUplot } from "../SolidUplot";
 
 const DEFAULT_DATA: uPlot.AlignedData = [
@@ -316,10 +319,14 @@ describe("COMPONENT: <SolidUplot />", () => {
   });
 });
 
-describe("PLUGIN: cursor", () => {
+describe("CURSOR (built in)", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   test("updates bus on pointer events", async () => {
     let uPlotInstance!: uPlot;
-    const bus = createPluginBus<CursorPluginMessageBus>();
+    const bus = createPluginBus();
 
     render(() => (
       <SolidUplot
@@ -331,41 +338,174 @@ describe("PLUGIN: cursor", () => {
         ]}
         series={[{}, { label: "A" }]}
         pluginBus={bus}
-        plugins={[cursor()]}
         onCreate={(chart) => {
           uPlotInstance = chart;
         }}
       />
     ));
 
-    // Wait for the chart to be created and the plugin to register
-    await waitFor(() => {
-      // The cursor plugin should have initialized the bus
-      expect(bus.data.cursor).toBeDefined();
-    });
+    await waitFor(() => expect(uPlotInstance).toBeDefined());
 
     // Find the .over element (uPlot's mouse event layer)
     const over = document.querySelector(".u-over") as HTMLElement;
     expect(over).toBeInTheDocument();
 
-    // Simulate pointerenter
     over.dispatchEvent(new PointerEvent("pointerenter"));
-    await waitFor(() => {
-      expect(bus.data.cursor?.sourceId).toBe(uPlotInstance.root.id);
+    expect(bus.data.cursor.sourceId).toBe(uPlotInstance.root.id);
+
+    over.dispatchEvent(new PointerEvent("pointerleave"));
+    expect(bus.data.cursor.sourceId).toBeUndefined();
+  });
+
+  test("a chart joining a shared bus keeps the other charts' cursor state", async () => {
+    const bus = createPluginBus();
+    const [showSecond, setShowSecond] = createSignal(false);
+    let first!: uPlot;
+    const chart = (id: string, onCreate?: (u: uPlot) => void) => (
+      <SolidUplot
+        id={id}
+        width={200}
+        height={100}
+        data={[
+          [1, 2, 3],
+          [4, 5, 6],
+        ]}
+        series={[{}, { label: "A" }]}
+        pluginBus={bus}
+        onCreate={onCreate}
+      />
+    );
+
+    render(() => (
+      <>
+        {chart("first", (u) => (first = u))}
+        <Show when={showSecond()}>{chart("second")}</Show>
+      </>
+    ));
+
+    await waitFor(() => expect(first).toBeDefined());
+    first.setCursor({ left: 10, top: 10 });
+    expect(bus.data.cursor.state["first"]).toBeDefined();
+
+    setShowSecond(true);
+    await waitFor(() => expect(document.querySelectorAll(".uplot")).toHaveLength(2));
+
+    expect(bus.data.cursor.state["first"]).toBeDefined();
+  });
+
+  test("a bus from createPluginBus always has cursor state", () => {
+    expect(createPluginBus().data.cursor).toEqual({ state: {} });
+  });
+
+  test("without a pluginBus, each chart gives its plugins its own bus", async () => {
+    const buses: SolidUplotPluginBus[] = [];
+    const capture: UplotPluginFactory = ({ bus }) => {
+      buses.push(bus);
+      return { hooks: {} };
+    };
+    const chart = () => (
+      <SolidUplot
+        width={200}
+        height={100}
+        data={[
+          [1, 2, 3],
+          [4, 5, 6],
+        ]}
+        series={[{}, { label: "A" }]}
+        plugins={[capture]}
+      />
+    );
+
+    render(() => (
+      <>
+        {chart()}
+        {chart()}
+      </>
+    ));
+
+    await waitFor(() => expect(buses).toHaveLength(2));
+    expect(buses[0]).not.toBe(buses[1]);
+    expect(buses[0]!.data.cursor).toEqual({ state: {} });
+  });
+
+  test("every plugin's setCursor hook reads the current cursor position", async () => {
+    const seen: (number | undefined)[] = [];
+    let chart!: uPlot;
+    // A user plugin that reads the built-in cursor state.
+    const reader: UplotPluginFactory = ({ bus }) => ({
+      hooks: {
+        setCursor: (u) => {
+          seen.push(bus.data.cursor.state[u.root.id]?.idx);
+        },
+      },
     });
 
-    // Simulate pointerleave
-    over.dispatchEvent(new PointerEvent("pointerleave"));
-    await waitFor(() => {
-      expect(bus.data.cursor?.sourceId).toBeUndefined();
-    });
+    render(() => (
+      <SolidUplot
+        width={400}
+        height={200}
+        data={[
+          [1, 2, 3, 4, 5],
+          [10, 20, 30, 40, 50],
+        ]}
+        series={[{}, { label: "A" }]}
+        scales={{ x: { time: false } }}
+        plugins={[reader]}
+        onCreate={(u) => (chart = u)}
+      />
+    ));
+    await waitFor(() => expect(chart).toBeDefined());
+
+    for (const left of [chart.valToPos(1, "x"), chart.valToPos(4, "x")]) {
+      chart.setCursor({ left, top: 10 });
+      expect(seen.at(-1)).toBe(chart.cursor.idx);
+    }
+    expect(seen.slice(-2)).toEqual([0, 3]);
+  });
+
+  test("a hovered tooltip shows new values when the data under the cursor changes", async () => {
+    let chart!: uPlot;
+    const [data, setData] = createSignal<uPlot.AlignedData>([
+      [1, 2, 3],
+      [4, 5, 6],
+    ]);
+    const Tip: Component<TooltipProps> = (props) => (
+      <span data-testid="tip-value">{props.u.data[1]![props.cursor.idx]}</span>
+    );
+
+    render(() => (
+      <SolidUplot
+        width={200}
+        height={100}
+        data={data()}
+        series={[{}, { label: "A" }]}
+        scales={{ x: { time: false } }}
+        plugins={[tooltip(Tip)]}
+        onCreate={(u) => (chart = u)}
+      />
+    ));
+    await waitFor(() => expect(chart).toBeDefined());
+
+    chart.setCursor({ left: chart.valToPos(2, "x"), top: 10 });
+    await waitFor(() =>
+      expect(document.querySelector('[data-testid="tip-value"]')).toHaveTextContent("5"),
+    );
+
+    // Same x values, so the cursor index is unchanged; only the y values move.
+    setData([
+      [1, 2, 3],
+      [7, 8, 9],
+    ]);
+    await waitFor(() =>
+      expect(document.querySelector('[data-testid="tip-value"]')).toHaveTextContent("8"),
+    );
   });
 });
 
 describe("PLUGIN: focusSeries", () => {
   test("focuses series based on cursor proximity", async () => {
     let uPlotInstance!: uPlot;
-    const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+    const bus = createPluginBus<FocusSeriesPluginMessageBus>();
 
     render(() => (
       <SolidUplot
@@ -382,7 +522,7 @@ describe("PLUGIN: focusSeries", () => {
         ]}
         series={[{}, { label: "Series 1" }, { label: "Series 2" }, { label: "Series 3" }]}
         pluginBus={bus}
-        plugins={[cursor(), focusSeries({ pxThreshold: 500 })]}
+        plugins={[focusSeries({ pxThreshold: 500 })]}
         onCreate={(chart) => {
           uPlotInstance = chart;
         }}
@@ -413,7 +553,7 @@ describe("PLUGIN: focusSeries", () => {
 
   test("handles cleanup properly", async () => {
     let uPlotInstance!: uPlot;
-    const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+    const bus = createPluginBus<FocusSeriesPluginMessageBus>();
     const { unmount } = render(() => (
       <SolidUplot
         width={200}
@@ -424,7 +564,7 @@ describe("PLUGIN: focusSeries", () => {
         ]}
         series={[{}, { label: "Series 1" }]}
         pluginBus={bus}
-        plugins={[cursor(), focusSeries({ pxThreshold: 500 })]}
+        plugins={[focusSeries({ pxThreshold: 500 })]}
         onCreate={(chart) => {
           uPlotInstance = chart;
         }}
@@ -450,7 +590,7 @@ describe("PLUGIN: focusSeries", () => {
   });
 
   test("plugin factory creates plugin with correct hooks", () => {
-    const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+    const bus = createPluginBus<FocusSeriesPluginMessageBus>();
     const plugin = focusSeries()({ bus });
 
     expect(plugin.hooks).toBeDefined();
@@ -461,7 +601,7 @@ describe("PLUGIN: focusSeries", () => {
 
   test("plugin updates series alpha based on cursor proximity", async () => {
     let uPlotInstance!: uPlot;
-    const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+    const bus = createPluginBus<FocusSeriesPluginMessageBus>();
     const pxThreshold = 5;
 
     const { container } = render(() => (
@@ -475,7 +615,7 @@ describe("PLUGIN: focusSeries", () => {
         ]}
         series={[{}, { label: "Series 1" }, { label: "Series 2" }]}
         pluginBus={bus}
-        plugins={[cursor(), focusSeries({ pxThreshold })]}
+        plugins={[focusSeries({ pxThreshold })]}
         onCreate={(chart) => {
           uPlotInstance = chart;
         }}
@@ -551,7 +691,7 @@ describe("PLUGIN: legend", () => {
   });
 
   test("renders legend with series data", async () => {
-    const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+    const bus = createPluginBus<FocusSeriesPluginMessageBus>();
     let uPlotInstance!: uPlot;
 
     render(() => (
@@ -585,7 +725,7 @@ describe("PLUGIN: legend", () => {
   });
 
   test("positions legend according to placement prop", async () => {
-    const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+    const bus = createPluginBus<FocusSeriesPluginMessageBus>();
     let uPlotInstance!: uPlot;
 
     render(() => (
@@ -614,7 +754,7 @@ describe("PLUGIN: legend", () => {
   });
 
   test("cleans up legend on unmount", async () => {
-    const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+    const bus = createPluginBus<FocusSeriesPluginMessageBus>();
     let uPlotInstance!: uPlot;
 
     const { unmount } = render(() => (
@@ -646,7 +786,7 @@ describe("PLUGIN: legend", () => {
   });
 
   test("applies custom styles to legend container", async () => {
-    const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+    const bus = createPluginBus<FocusSeriesPluginMessageBus>();
     let uPlotInstance!: uPlot;
 
     const customStyle = {
@@ -690,7 +830,7 @@ describe("PLUGIN: legend", () => {
   });
 
   test("applies default positioning styles", async () => {
-    const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+    const bus = createPluginBus<FocusSeriesPluginMessageBus>();
     let uPlotInstance!: uPlot;
 
     render(() => (
@@ -731,7 +871,7 @@ describe("PLUGIN COMPONENTS: context", () => {
 
   test("legend and tooltip components see the app's context", async () => {
     const Theme = createContext<string>();
-    const bus = createPluginBus<CursorPluginMessageBus>();
+    const bus = createPluginBus();
     let chart: uPlot | undefined;
 
     const Legend = () => <span data-testid="legend-theme">{useContext(Theme)}</span>;
@@ -743,7 +883,7 @@ describe("PLUGIN COMPONENTS: context", () => {
           id="themed"
           {...DEFAULT_OPTIONS}
           data={DEFAULT_DATA}
-          plugins={[cursor(), legend(Legend), tooltip(Tip)]}
+          plugins={[legend(Legend), tooltip(Tip)]}
           pluginBus={bus}
           onCreate={(u) => (chart = u)}
         />

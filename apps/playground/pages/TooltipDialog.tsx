@@ -1,14 +1,9 @@
 import { createPluginBus, SolidUplot } from "@dschz/solid-uplot";
-import {
-  cursor,
-  type CursorPluginMessageBus,
-  tooltip,
-  type TooltipProps,
-} from "@dschz/solid-uplot/plugins";
+import { tooltip, type TooltipProps } from "@dschz/solid-uplot/plugins";
 import { type Component, createEffect, createSignal, For, Show } from "solid-js";
 
-const bus1 = createPluginBus<CursorPluginMessageBus>();
-const bus2 = createPluginBus<CursorPluginMessageBus>();
+const bus1 = createPluginBus();
+const bus2 = createPluginBus();
 
 const CustomTooltip: Component<TooltipProps> = (props) => {
   return (
@@ -150,7 +145,7 @@ export const TooltipDialogPage: Component = () => {
                 },
               }}
               series={chartSeries}
-              plugins={[cursor(), tooltip(CustomTooltip, { placement: "top-right" })]}
+              plugins={[tooltip(CustomTooltip, { placement: "top-right" })]}
               pluginBus={bus1}
             />
           </div>
@@ -244,10 +239,7 @@ export const TooltipDialogPage: Component = () => {
                         },
                       }}
                       series={chartSeries}
-                      plugins={[
-                        cursor(),
-                        tooltip(CustomTooltip, { placement: "top-right", fixed: true }),
-                      ]}
+                      plugins={[tooltip(CustomTooltip, { placement: "top-right", fixed: true })]}
                       pluginBus={bus2}
                     />
                   </div>

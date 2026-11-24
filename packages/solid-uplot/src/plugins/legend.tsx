@@ -4,7 +4,6 @@ import uPlot from "uplot";
 
 import type { SolidUplotPluginBus, UplotPluginFactory } from "../createPluginBus";
 import { getSeriesData, type SeriesDatum } from "../utils/getSeriesData";
-import type { CursorPluginMessageBus } from "./cursor";
 import type { FocusSeriesPluginMessageBus } from "./focusSeries";
 
 /**
@@ -22,7 +21,7 @@ export type LegendPlacement = "top-left" | "top-right";
 export type LegendProps = {
   readonly u: uPlot;
   readonly seriesData: SeriesDatum[];
-  readonly bus: SolidUplotPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>;
+  readonly bus: SolidUplotPluginBus<FocusSeriesPluginMessageBus>;
 };
 
 type LegendRootProps = {
@@ -84,13 +83,8 @@ export type LegendPluginOptions = LegendRootProps & LegendConfigOptions;
 export const legend = (
   Component: Component<LegendProps>,
   options: LegendPluginOptions = {},
-): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus> => {
+): UplotPluginFactory<FocusSeriesPluginMessageBus> => {
   return ({ bus, owner }) => {
-    if (!bus) {
-      console.warn("[solid-uplot]: A plugin bus is required for the Legend plugin");
-      return { hooks: {} };
-    }
-
     let legendRoot!: HTMLDivElement;
     let dispose: (() => void) | undefined;
 

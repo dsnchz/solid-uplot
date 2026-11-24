@@ -1,7 +1,7 @@
 import { createEffect, createRoot } from "solid-js";
 
 import type { UplotPluginFactory } from "../createPluginBus";
-import type { CursorPluginMessageBus } from "./cursor";
+import type { CursorPluginMessage } from "../cursor";
 
 const DEFAULT_UNFOCUSED_ALPHA = 0.1 as const;
 const DEFAULT_FOCUSED_ALPHA = 1 as const;
@@ -94,9 +94,7 @@ export type FocusSeriesPluginMessageBus = {
 /**
  * Configuration options for the focus series plugin.
  */
-export type FocusSeriesPluginOptions<
-  T extends CursorPluginMessageBus & FocusSeriesPluginMessageBus,
-> = {
+export type FocusSeriesPluginOptions = {
   /**
    * The vertical distance in pixels required to focus a series.
    * If the cursor's Y position is within this threshold of a Y value, that series is considered focused.
@@ -130,7 +128,7 @@ export type FocusSeriesPluginOptions<
   /**
    *
    * For charts that are configured with this plugin, this callback is used to determine if the chart
-   * should redraw when the plugin bus updates. It is an additional condition to the base condition `cursor?.sourceId !== u.root.id`
+   * should redraw when the plugin bus updates. It is an additional condition to the base condition `cursor.sourceId !== u.root.id`
    * which is always applied first to prevent the source chart from redrawing twice.
    *
    * This can be used to add filtering logic, such as only reacting to specific source charts.
@@ -141,9 +139,9 @@ export type FocusSeriesPluginOptions<
     /** The current chart instance (the one evaluating whether to redraw) */
     readonly u: uPlot;
     /** Current cursor state from the bus (may be from another chart) */
-    readonly cursor: T["cursor"];
+    readonly cursor: CursorPluginMessage;
     /** Current focus series state from the bus */
-    readonly focusSeries: T["focusSeries"];
+    readonly focusSeries: FocusSeriesPluginMessage | undefined;
   }) => boolean;
 };
 
@@ -197,19 +195,19 @@ const seriesFocusRedraw = (u: uPlot, options: SeriesFocusRedrawOptions = {}) => 
  * - Support for targeting series by label, index, or zero-based index
  *
  * **Requirements:**
- * - Requires the cursor plugin to be active for position tracking
- * - Needs a plugin bus for cursor data communication
+ * - Nothing extra: it reads the chart's built-in cursor state. Share a plugin bus between
+ *   charts to mirror focus across them.
  *
  * **Usage:**
  * ```typescript
  * import { createPluginBus } from '@dschz/solid-uplot';
- * import { cursor, focusSeries, type CursorPluginMessageBus, type FocusSeriesPluginMessageBus } from '@dschz/solid-uplot/plugins';
+ * import { focusSeries, type FocusSeriesPluginMessageBus } from '@dschz/solid-uplot/plugins';
  *
- * const bus = createPluginBus<CursorPluginMessageBus & FocusSeriesPluginMessageBus>();
+ * const bus = createPluginBus<FocusSeriesPluginMessageBus>();
  *
  * <SolidUplot
  *   // ... other props
- *   plugins={[cursor(), focusSeries({ pxThreshold: 10 })]}
+ *   plugins={[focusSeries({ pxThreshold: 10 })]}
  *   pluginBus={bus}
  * />
  * ```
@@ -218,14 +216,9 @@ const seriesFocusRedraw = (u: uPlot, options: SeriesFocusRedrawOptions = {}) => 
  * @returns A plugin factory function that creates the focus series plugin instance
  */
 export const focusSeries = (
-  options: FocusSeriesPluginOptions<CursorPluginMessageBus & FocusSeriesPluginMessageBus> = {},
-): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus> => {
+  options: FocusSeriesPluginOptions = {},
+): UplotPluginFactory<FocusSeriesPluginMessageBus> => {
   return ({ bus }) => {
-    if (!bus) {
-      console.warn("[solid-uplot]: A plugin bus is required for the focusSeries plugin");
-      return { hooks: {} };
-    }
-
     const {
       pxThreshold = 5,
       unfocusedAlpha = DEFAULT_UNFOCUSED_ALPHA,
@@ -270,7 +263,7 @@ export const focusSeries = (
               const cursor = bus.data.cursor;
               const focusSeries = bus.data.focusSeries;
 
-              const isNotSourceChart = cursor?.sourceId !== u.root.id;
+              const isNotSourceChart = cursor.sourceId !== u.root.id;
               const userRedrawCondition =
                 options.shouldRedrawOnBusUpdate?.({ u, cursor, focusSeries }) ?? true;
 
@@ -289,10 +282,10 @@ export const focusSeries = (
         },
         setCursor: (u) => {
           const cursor = bus.data.cursor;
-          const chartCursor = cursor?.state[u.root.id];
+          const chartCursor = cursor.state[u.root.id];
 
           // Do nothing if this chart instance is not the source of the focus.
-          if (!cursor || !chartCursor || cursor.sourceId !== u.root.id) return;
+          if (!chartCursor || cursor.sourceId !== u.root.id) return;
 
           const focusTargets: SeriesFocusTarget[] = [];
 

@@ -16,7 +16,13 @@ import {
 } from "solid-js";
 import uPlot from "uplot";
 
-import type { SolidUplotPluginBus, UplotPluginFactory, VoidStruct } from "./createPluginBus";
+import {
+  createPluginBus,
+  type SolidUplotPluginBus,
+  type UplotPluginFactory,
+  type VoidStruct,
+} from "./createPluginBus";
+import { createCursorPlugin } from "./cursor";
 import { createCursorMovePlugin, type OnCursorMoveParams } from "./eventPlugins";
 import { getSeriesData, type SeriesDatum } from "./utils/getSeriesData";
 
@@ -67,7 +73,10 @@ export type SolidUplotOptions<T extends VoidStruct = VoidStruct> = Omit<
   readonly height?: number;
   /** Chart data - accepts AlignedData or number[][] */
   readonly data?: uPlot.AlignedData | number[][];
-  /** Plugin communication bus for coordinating between plugins */
+  /**
+   * Plugin bus shared by this chart's plugins. Omit it and the chart uses its own bus; pass
+   * one to share plugin state between charts or with components outside the chart.
+   */
   readonly pluginBus?: SolidUplotPluginBus<T>;
   /** Array of plugins to apply to the chart */
   readonly plugins?: SolidUplotPlugin<T>[];
@@ -215,11 +224,19 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
 
   // Plugins mount their Solid UI (tooltip, legend) under this owner so app context reaches it.
   const owner = getOwner();
+  // The bus used when no `pluginBus` is passed, so plugins always have one.
+  const ownBus = createPluginBus<T>();
 
   const chartPlugins = createMemo(() => {
-    const plugins = system.plugins.map((plugin) =>
-      typeof plugin === "function" ? plugin({ bus: system.pluginBus, owner }) : plugin,
-    );
+    const bus = system.pluginBus ?? ownBus;
+    // Cursor tracking is installed first on every chart, so every other plugin can read
+    // `bus.data.cursor` — including during the same uPlot hook cascade.
+    const plugins: uPlot.Plugin[] = [
+      createCursorPlugin(bus),
+      ...system.plugins.map((plugin) =>
+        typeof plugin === "function" ? plugin({ bus, owner }) : plugin,
+      ),
+    ];
 
     // Add internal cursor move plugin if callback is provided
     if (local.onCursorMove) {

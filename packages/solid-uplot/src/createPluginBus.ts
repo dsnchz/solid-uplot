@@ -1,27 +1,36 @@
 import type { Owner } from "solid-js";
 import { createStore, type SetStoreFunction, type Store } from "solid-js/store";
 
+import type { CursorPluginMessageBus } from "./cursor";
+
 /** Base constraint for plugin bus data structures */
 export type VoidStruct = Record<string, unknown>;
 
 /**
  * A SolidUplot plugin bus: a Solid store shared by the plugins of one or more charts.
- * `setData` is Solid's store setter: `bus.setData("cursor", "sourceId", id)`.
+ * `setData` is Solid's store setter: `bus.setData("myPlugin", { value: 1 })`.
  *
- * @template T - The type of the plugin bus data structure
+ * Every bus carries the built-in cursor state (`data.cursor`, see {@link CursorPluginMessageBus})
+ * on top of `T`.
+ *
+ * @template T - Your plugins' message types, e.g. `FocusSeriesPluginMessageBus & MyPluginMessageBus`
  */
 export type SolidUplotPluginBus<T extends VoidStruct = VoidStruct> = {
-  readonly data: Store<T>;
-  readonly setData: SetStoreFunction<T>;
+  readonly data: Store<T & CursorPluginMessageBus>;
+  readonly setData: SetStoreFunction<T & CursorPluginMessageBus>;
 };
 
 /**
  * Creates a reactive store shared across SolidUplot plugins.
  *
- * This store acts as a message bus, allowing plugins to publish and
- * subscribe to typed messages based on agreed-upon keys (e.g., `tooltip`, `highlight`).
+ * This store acts as a message bus, allowing plugins to publish and subscribe to typed
+ * messages based on agreed-upon keys (e.g., `tooltip`, `highlight`). It is seeded with the
+ * built-in cursor state, so `bus.data.cursor` is always defined.
  *
- * @template T - The type of the plugin bus data structure
+ * A chart without a `pluginBus` prop creates its own bus. Create one yourself to share it
+ * between charts (synced tooltips and focus) or to read and write it from outside a chart.
+ *
+ * @template T - Your plugins' message types
  * @param initialData - Initial data for the plugin bus
  * @returns A reactive store with data and setData functions
  *
@@ -36,9 +45,12 @@ export type SolidUplotPluginBus<T extends VoidStruct = VoidStruct> = {
  * ```
  */
 export const createPluginBus = <T extends VoidStruct = VoidStruct>(
-  initialData: T = {} as T,
+  initialData: Omit<T, keyof CursorPluginMessageBus> & Partial<CursorPluginMessageBus> = {} as T,
 ): SolidUplotPluginBus<T> => {
-  const [data, setData] = createStore<T>(initialData);
+  const [data, setData] = createStore<T & CursorPluginMessageBus>({
+    cursor: { state: {} },
+    ...initialData,
+  } as T & CursorPluginMessageBus);
   return { data, setData };
 };
 
@@ -48,8 +60,11 @@ export const createPluginBus = <T extends VoidStruct = VoidStruct>(
  * @template T - The type of the plugin bus data structure
  */
 export type UplotPluginFactoryContext<T extends VoidStruct = VoidStruct> = {
-  /** The plugin communication bus for sharing data between plugins */
-  readonly bus?: SolidUplotPluginBus<T>;
+  /**
+   * The plugin bus: the `pluginBus` prop, or the chart's own bus when none is passed.
+   * Always defined, and `bus.data.cursor` always holds the built-in cursor state.
+   */
+  readonly bus: SolidUplotPluginBus<T>;
   /**
    * The reactive owner of the `SolidUplot` component. Mount a plugin's Solid UI under it —
    * `runWithOwner(owner ?? null, () => render(() => <Ui />, u.over))` — so the UI sees the
@@ -69,7 +84,9 @@ export type UplotPluginFactoryContext<T extends VoidStruct = VoidStruct> = {
  * 1. Define your plugin's message type
  * 2. Define your plugin's message bus type
  * 3. Export your plugin factory with proper type constraints
- * 4. Include bus validation and warning messages
+ *
+ * Every chart tracks the cursor before any plugin runs, so a plugin can read
+ * `bus.data.cursor.state[u.root.id]` without adding anything to its bus type.
  *
  * @template T - The type of the plugin bus data structure for type-safe communication
  *
@@ -79,7 +96,6 @@ export type UplotPluginFactoryContext<T extends VoidStruct = VoidStruct> = {
  * @example
  * ```tsx
  * import type { UplotPluginFactory } from '@dschz/solid-uplot';
- * import type { CursorPluginMessageBus } from '@dschz/solid-uplot/plugins';
  *
  * // 1. Define your plugin's message type
  * export type MyPluginMessage = {
@@ -93,42 +109,27 @@ export type UplotPluginFactoryContext<T extends VoidStruct = VoidStruct> = {
  * };
  *
  * // 3. Export your plugin factory with proper type constraints
- * export const myPlugin = (
- *   options = {},
- * ): UplotPluginFactory<CursorPluginMessageBus & MyPluginMessageBus> => {
- *   return ({ bus }) => {
- *     // 4. Include bus validation and warning
- *     if (!bus) {
- *       console.warn("[my-plugin]: A plugin bus is required");
- *       return { hooks: {} };
- *     }
- *
- *     return {
- *       hooks: {
- *         ready: (u) => {
- *           // Initialize plugin state
- *           bus.setData("myPlugin", {
- *             value: 0,
- *             timestamp: Date.now(),
- *           });
- *         },
- *         setData: (u) => {
- *           // Update plugin state reactively
- *           bus.setData("myPlugin", "value", (prev) => prev + 1);
- *         },
+ * export const myPlugin = (options = {}): UplotPluginFactory<MyPluginMessageBus> => {
+ *   return ({ bus }) => ({
+ *     hooks: {
+ *       ready: (u) => {
+ *         // Initialize plugin state
+ *         bus.setData("myPlugin", { value: 0, timestamp: Date.now() });
  *       },
- *     };
- *   };
+ *       setCursor: (u) => {
+ *         // The built-in cursor state is always there
+ *         const cursor = bus.data.cursor.state[u.root.id];
+ *         if (cursor) console.log(cursor.xValue);
+ *       },
+ *       destroy: (u) => {
+ *         bus.setData("myPlugin", undefined);
+ *       },
+ *     },
+ *   });
  * };
  *
- * // Usage with proper typing
- * const bus = createPluginBus<CursorPluginMessageBus & MyPluginMessageBus>();
- *
- * <SolidUplot
- *   data={data}
- *   pluginBus={bus}
- *   plugins={[cursor(), myPlugin()]}
- * />
+ * // No bus needed for a single chart; pass one to share it between charts
+ * <SolidUplot data={data} series={series} plugins={[myPlugin()]} />
  * ```
  *
  * @see {@link https://github.com/leeoniya/uPlot/tree/master/docs#plugins} uPlot Plugin Documentation
