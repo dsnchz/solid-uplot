@@ -79,7 +79,6 @@ import type {
   SolidUplotProps,
   UplotPluginFactory,
   UplotPluginFactoryContext,
-  VoidStruct,
 } from "@dschz/solid-uplot";
 ```
 
@@ -572,30 +571,31 @@ type SolidUplotEvents = {
 };
 
 // Main component props (extends all uPlot.Options except plugins, width, height)
-type SolidUplotProps<T extends VoidStruct = VoidStruct> = SolidUplotOptions<T> &
-  SolidUplotEvents & {
-    // Ref callback to access the chart container element
-    ref?: Ref<HTMLDivElement>;
+type SolidUplotProps<T extends Record<string, unknown> = Record<string, unknown>> =
+  SolidUplotOptions<T> &
+    SolidUplotEvents & {
+      // Ref callback to access the chart container element
+      ref?: Ref<HTMLDivElement>;
 
-    // CSS class name for the chart container (default: "solid-uplot")
-    // Additional classes will be appended to the default class
-    class?: string;
+      // CSS class name for the chart container (default: "solid-uplot")
+      // Additional classes will be appended to the default class
+      class?: string;
 
-    // CSS styles for the chart container (position is managed internally)
-    style?: Omit<JSX.CSSProperties, "position">;
+      // CSS styles for the chart container (position is managed internally)
+      style?: Omit<JSX.CSSProperties, "position">;
 
-    // Enable automatic resizing to fit container (default: false)
-    autoResize?: boolean;
+      // Enable automatic resizing to fit container (default: false)
+      autoResize?: boolean;
 
-    // Whether to reset scales when chart data is updated (default: true)
-    resetScales?: boolean;
+      // Whether to reset scales when chart data is updated (default: true)
+      resetScales?: boolean;
 
-    // Where to place children components relative to the chart (default: "top")
-    childrenPlacement?: "top" | "bottom";
-  };
+      // Where to place children components relative to the chart (default: "top")
+      childrenPlacement?: "top" | "bottom";
+    };
 
 // Configuration options extending uPlot.Options with SolidJS enhancements
-type SolidUplotOptions<T extends VoidStruct = VoidStruct> = Omit<
+type SolidUplotOptions<T extends Record<string, unknown> = Record<string, unknown>> = Omit<
   uPlot.Options,
   "plugins" | "width" | "height" | "data"
 > & {
@@ -614,20 +614,22 @@ type SolidUplotOptions<T extends VoidStruct = VoidStruct> = Omit<
 };
 
 // Plugin type (can be standard uPlot plugin or factory function)
-type SolidUplotPlugin<T extends VoidStruct = VoidStruct> = uPlot.Plugin | UplotPluginFactory<T>;
+type SolidUplotPlugin<T extends Record<string, unknown> = Record<string, unknown>> =
+  | uPlot.Plugin
+  | UplotPluginFactory<T>;
 ```
 
 ### Plugin Bus
 
 ```tsx
 // Plugin bus: a Solid store. Every bus carries the built-in cursor state on top of T.
-type SolidUplotPluginBus<T extends VoidStruct = VoidStruct> = {
+type SolidUplotPluginBus<T extends Record<string, unknown> = Record<string, unknown>> = {
   readonly data: Store<T & CursorPluginMessageBus>;
   readonly setData: SetStoreFunction<T & CursorPluginMessageBus>;
 };
 
 // Create a plugin bus (seeded with `cursor: { state: {} }`)
-const createPluginBus: <T extends VoidStruct = VoidStruct>(
+const createPluginBus: <T extends Record<string, unknown> = Record<string, unknown>>(
   initialData?: Omit<T, "cursor"> & Partial<CursorPluginMessageBus>,
 ) => SolidUplotPluginBus<T>;
 
@@ -640,7 +642,7 @@ type CursorPluginMessage = {
 type CursorPluginMessageBus = { cursor: CursorPluginMessage };
 
 // Context passed to every plugin factory
-type UplotPluginFactoryContext<T extends VoidStruct = VoidStruct> = {
+type UplotPluginFactoryContext<T extends Record<string, unknown> = Record<string, unknown>> = {
   // The `pluginBus` prop, or the chart's own bus when none is passed. Always defined.
   readonly bus: SolidUplotPluginBus<T>;
   // Owner of the <SolidUplot> component: mount plugin UI under it to see app context
@@ -648,7 +650,7 @@ type UplotPluginFactoryContext<T extends VoidStruct = VoidStruct> = {
 };
 
 // Plugin factory: receives the context, returns a standard uPlot plugin
-type UplotPluginFactory<T extends VoidStruct = VoidStruct> = (
+type UplotPluginFactory<T extends Record<string, unknown> = Record<string, unknown>> = (
   ctx: UplotPluginFactoryContext<T>,
 ) => uPlot.Plugin;
 ```

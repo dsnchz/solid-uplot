@@ -3,7 +3,6 @@ export {
   type SolidUplotPluginBus,
   type UplotPluginFactory,
   type UplotPluginFactoryContext,
-  type VoidStruct,
 } from "./createPluginBus";
 export type { CursorPluginMessage, CursorPluginMessageBus } from "./cursor";
 export type { OnCursorMoveParams } from "./eventPlugins";

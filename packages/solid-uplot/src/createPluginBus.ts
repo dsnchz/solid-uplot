@@ -3,7 +3,10 @@ import { createStore, type SetStoreFunction, type Store } from "solid-js/store";
 
 import type { CursorPluginMessageBus } from "./cursor";
 
-/** Base constraint for plugin bus data structures */
+/**
+ * Base constraint for plugin bus data structures.
+ * @internal Not exported from the package; consumers write `Record<string, unknown>`.
+ */
 export type VoidStruct = Record<string, unknown>;
 
 /**
