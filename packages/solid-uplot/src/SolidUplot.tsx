@@ -4,6 +4,7 @@ import {
   createEffect,
   createMemo,
   createUniqueId,
+  getOwner,
   type JSX,
   mergeProps,
   on,
@@ -212,9 +213,12 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
 
   const size = () => ({ width: updateableOptions.width, height: updateableOptions.height });
 
+  // Plugins mount their Solid UI (tooltip, legend) under this owner so app context reaches it.
+  const owner = getOwner();
+
   const chartPlugins = createMemo(() => {
     const plugins = system.plugins.map((plugin) =>
-      typeof plugin === "function" ? plugin({ bus: system.pluginBus }) : plugin,
+      typeof plugin === "function" ? plugin({ bus: system.pluginBus, owner }) : plugin,
     );
 
     // Add internal cursor move plugin if callback is provided

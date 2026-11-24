@@ -1,3 +1,4 @@
+import type { Owner } from "solid-js";
 import { createStore, type SetStoreFunction, type Store } from "solid-js/store";
 
 /** Base constraint for plugin bus data structures */
@@ -49,6 +50,12 @@ export const createPluginBus = <T extends VoidStruct = VoidStruct>(
 export type UplotPluginFactoryContext<T extends VoidStruct = VoidStruct> = {
   /** The plugin communication bus for sharing data between plugins */
   readonly bus?: SolidUplotPluginBus<T>;
+  /**
+   * The reactive owner of the `SolidUplot` component. Mount a plugin's Solid UI under it —
+   * `runWithOwner(owner ?? null, () => render(() => <Ui />, u.over))` — so the UI sees the
+   * app's context (`useContext`).
+   */
+  readonly owner?: Owner | null;
 };
 
 /**

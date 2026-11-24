@@ -1,4 +1,4 @@
-import { type Component, type JSX, mergeProps, splitProps } from "solid-js";
+import { type Component, type JSX, mergeProps, runWithOwner, splitProps } from "solid-js";
 import { render } from "solid-js/web";
 import uPlot from "uplot";
 
@@ -85,14 +85,14 @@ export const legend = (
   Component: Component<LegendProps>,
   options: LegendPluginOptions = {},
 ): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus> => {
-  return ({ bus }) => {
+  return ({ bus, owner }) => {
     if (!bus) {
       console.warn("[solid-uplot]: A plugin bus is required for the Legend plugin");
       return { hooks: {} };
     }
 
     let legendRoot!: HTMLDivElement;
-    let dispose!: () => void;
+    let dispose: (() => void) | undefined;
 
     return {
       hooks: {
@@ -143,10 +143,11 @@ export const legend = (
             );
           };
 
-          dispose = render(() => <LegendRoot />, u.over);
+          // Mount under the chart component's owner so app context reaches the legend.
+          dispose = runWithOwner(owner ?? null, () => render(() => <LegendRoot />, u.over));
         },
         destroy: () => {
-          dispose();
+          dispose?.();
           legendRoot?.remove();
         },
       },

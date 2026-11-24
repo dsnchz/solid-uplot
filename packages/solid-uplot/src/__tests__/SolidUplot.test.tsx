@@ -1,7 +1,7 @@
 import { cleanup, render, waitFor } from "@solidjs/testing-library";
 import userEvent from "@testing-library/user-event";
 import type { Component } from "solid-js";
-import { createSignal, For } from "solid-js";
+import { createContext, createSignal, For, useContext } from "solid-js";
 import uPlot from "uplot";
 import { afterEach, beforeEach, describe, expect, type MockInstance, test, vi } from "vitest";
 
@@ -9,6 +9,7 @@ import { createPluginBus } from "../createPluginBus";
 import { cursor, type CursorPluginMessageBus } from "../plugins/cursor";
 import { focusSeries, type FocusSeriesPluginMessageBus } from "../plugins/focusSeries";
 import { legend, type LegendProps } from "../plugins/legend";
+import { tooltip } from "../plugins/tooltip";
 import { SolidUplot } from "../SolidUplot";
 
 const DEFAULT_DATA: uPlot.AlignedData = [
@@ -720,5 +721,46 @@ describe("PLUGIN: legend", () => {
       "z-index": "10",
       "pointer-events": "none",
     });
+  });
+});
+
+describe("PLUGIN COMPONENTS: context", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  test("legend and tooltip components see the app's context", async () => {
+    const Theme = createContext<string>();
+    const bus = createPluginBus<CursorPluginMessageBus>();
+    let chart: uPlot | undefined;
+
+    const Legend = () => <span data-testid="legend-theme">{useContext(Theme)}</span>;
+    const Tip = () => <span data-testid="tooltip-theme">{useContext(Theme)}</span>;
+
+    const { unmount } = render(() => (
+      <Theme.Provider value="dark">
+        <SolidUplot
+          id="themed"
+          {...DEFAULT_OPTIONS}
+          data={DEFAULT_DATA}
+          plugins={[cursor(), legend(Legend), tooltip(Tip)]}
+          pluginBus={bus}
+          onCreate={(u) => (chart = u)}
+        />
+      </Theme.Provider>
+    ));
+
+    await waitFor(() =>
+      expect(document.querySelector('[data-testid="legend-theme"]')).toHaveTextContent("dark"),
+    );
+
+    chart!.setCursor({ left: 10, top: 10 });
+    await waitFor(() =>
+      expect(document.querySelector('[data-testid="tooltip-theme"]')).toHaveTextContent("dark"),
+    );
+
+    unmount();
+    expect(document.querySelector('[data-testid="legend-theme"]')).toBeNull();
+    expect(document.querySelector('[data-testid="tooltip-theme"]')).toBeNull();
   });
 });

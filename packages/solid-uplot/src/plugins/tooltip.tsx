@@ -1,4 +1,4 @@
-import { type Component, type JSX, mergeProps, Show, splitProps } from "solid-js";
+import { type Component, type JSX, mergeProps, runWithOwner, Show, splitProps } from "solid-js";
 import { render } from "solid-js/web";
 import uPlot from "uplot";
 
@@ -260,14 +260,14 @@ export const tooltip = (
   Component: Component<TooltipProps>,
   options: TooltipPluginOptions = {},
 ): UplotPluginFactory<CursorPluginMessageBus & FocusSeriesPluginMessageBus> => {
-  return ({ bus }) => {
+  return ({ bus, owner }) => {
     if (!bus) {
       console.warn("[solid-uplot]: A plugin bus is required for the tooltip plugin");
       return { hooks: {} };
     }
 
     let tooltipRoot!: HTMLDivElement;
-    let dispose!: () => void;
+    let dispose: (() => void) | undefined;
 
     return {
       hooks: {
@@ -372,10 +372,11 @@ export const tooltip = (
             );
           };
 
-          dispose = render(() => <TooltipRoot />, u.root);
+          // Mount under the chart component's owner so app context reaches the tooltip.
+          dispose = runWithOwner(owner ?? null, () => render(() => <TooltipRoot />, u.root));
         },
         destroy: () => {
-          dispose();
+          dispose?.();
           tooltipRoot?.remove();
         },
       },
