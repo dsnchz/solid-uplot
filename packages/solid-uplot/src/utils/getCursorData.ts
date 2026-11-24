@@ -39,9 +39,9 @@ export type CursorData = {
  * Get the cursor index data for a given uPlot instance.
  *
  * @param u - The uPlot instance.
- * @returns The cursor data.
+ * @returns The cursor data, or `undefined` when the cursor is not over a data point.
  */
-export const getCursorData = (u: uPlot) => {
+export const getCursorData = (u: uPlot): CursorData | undefined => {
   const idx = u.cursor.idx;
   const xValues = u.data[0];
 
@@ -49,11 +49,11 @@ export const getCursorData = (u: uPlot) => {
 
   return !isValid
     ? undefined
-    : ({
+    : {
         plotId: u.root.id,
         idx,
         xValue: xValues[idx]!,
         visible: Boolean(u.cursor.show),
         position: { left: u.cursor.left || 0, top: u.cursor.top || 0 },
-      } as CursorData);
+      };
 };

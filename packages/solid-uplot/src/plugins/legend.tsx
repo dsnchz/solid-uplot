@@ -59,7 +59,7 @@ type LegendConfigOptions = {
   readonly pxOffset?: number;
 };
 
-type LegendPluginOptions = LegendRootProps & LegendConfigOptions;
+export type LegendPluginOptions = LegendRootProps & LegendConfigOptions;
 
 /**
  * Creates a simple, opinionated legend plugin that displays custom legend content

@@ -21,7 +21,7 @@ import { getSeriesData, type SeriesDatum } from "./utils/getSeriesData";
 const __DEV__ = import.meta.env.DEV;
 
 /** Placement options for children components relative to the chart */
-type ChildrenPlacement = "top" | "bottom";
+export type ChildrenPlacement = "top" | "bottom";
 
 /**
  * A SolidJS-compatible uPlot plugin that can be either a standard uPlot plugin
@@ -74,7 +74,7 @@ export type SolidUplotOptions<T extends VoidStruct = VoidStruct> = Omit<
 /**
  * Metadata provided to the onCreate callback when the chart is initialized
  */
-type OnCreateMeta = {
+export type OnCreateMeta = {
   /** Array of series data extracted from the chart configuration */
   readonly seriesData: SeriesDatum[];
 };
@@ -94,7 +94,7 @@ type SolidUplotEvents = {
  *
  * @template T - The type of the plugin bus data structure
  */
-type SolidUplotProps<T extends VoidStruct = VoidStruct> = SolidUplotOptions<T> &
+export type SolidUplotProps<T extends VoidStruct = VoidStruct> = SolidUplotOptions<T> &
   SolidUplotEvents & {
     /** Class name for the chart container */
     readonly class?: string;

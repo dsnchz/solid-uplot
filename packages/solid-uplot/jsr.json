@@ -2,7 +2,11 @@
   "name": "@dschz/solid-uplot",
   "version": "0.5.2",
   "license": "MIT",
-  "exports": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./plugins": "./src/plugins/index.ts",
+    "./utils": "./src/utils/index.ts"
+  },
   "compilerOptions": {
     "jsx": "preserve",
     "jsxImportSource": "solid-js"

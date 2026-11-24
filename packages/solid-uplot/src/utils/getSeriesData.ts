@@ -30,7 +30,7 @@ export type SeriesDatum = {
   readonly visible?: boolean;
 };
 
-type GetSeriesDataOptions = {
+export type GetSeriesDataOptions = {
   /** The function to transform the series label */
   readonly labelTransform?: (label?: string | HTMLElement) => string;
 };

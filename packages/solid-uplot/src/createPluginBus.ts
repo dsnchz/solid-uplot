@@ -4,10 +4,12 @@ import { createStore, type SetStoreFunction, type Store } from "solid-js/store";
 export type VoidStruct = Record<string, unknown>;
 
 /**
- * Internal type representing the plugin store structure
- * @internal
+ * A SolidUplot plugin bus: a Solid store shared by the plugins of one or more charts.
+ * `setData` is Solid's store setter: `bus.setData("cursor", "sourceId", id)`.
+ *
+ * @template T - The type of the plugin bus data structure
  */
-type PluginStore<T> = {
+export type SolidUplotPluginBus<T extends VoidStruct = VoidStruct> = {
   readonly data: Store<T>;
   readonly setData: SetStoreFunction<T>;
 };
@@ -34,19 +36,10 @@ type PluginStore<T> = {
  */
 export const createPluginBus = <T extends VoidStruct = VoidStruct>(
   initialData: T = {} as T,
-): PluginStore<T> => {
+): SolidUplotPluginBus<T> => {
   const [data, setData] = createStore<T>(initialData);
   return { data, setData };
 };
-
-/**
- * Type representing a SolidUplot plugin bus instance
- *
- * @template T - The type of the plugin bus data structure
- */
-export type SolidUplotPluginBus<T extends VoidStruct = VoidStruct> = ReturnType<
-  typeof createPluginBus<T>
->;
 
 /**
  * Context object passed to plugin factory functions
