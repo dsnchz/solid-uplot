@@ -1,5 +1,40 @@
 # @dschz/solid-uplot
 
+## 0.6.0
+
+### Minor Changes
+
+- 9eea245: Cursor tracking is built in, and every chart has a plugin bus.
+
+  Cursor position is the core primitive every chart plugin reads, so `SolidUplot` now installs cursor tracking on every chart, ahead of all other plugins, instead of relying on consumers to add a `cursor()` plugin (and add it first).
+
+  **Breaking**
+
+  - `cursor()` is removed from `@dschz/solid-uplot/plugins`. Delete it from your `plugins` arrays.
+  - `CursorPluginMessage` and `CursorPluginMessageBus` moved from `@dschz/solid-uplot/plugins` to `@dschz/solid-uplot`.
+  - `UplotPluginFactoryContext["bus"]` is no longer optional, and `FocusSeriesPluginOptions` is no longer generic.
+
+  **New**
+
+  - `pluginBus` is optional: a chart without one uses its own bus, so `plugins={[tooltip(Tip)]}` works with nothing else. Pass a bus to share it between charts or with outside components.
+  - Every bus carries the cursor state: `SolidUplotPluginBus<T>` is typed `T & CursorPluginMessageBus`, and `createPluginBus` seeds `cursor: { state: {} }`, so `bus.data.cursor` is always defined and bus types never need to list `CursorPluginMessageBus`.
+
+  **Fixed**
+
+  - A chart joining or re-joining a shared bus no longer resets the other charts' cursor state (before, every chart creation reset it, hiding the other charts' tooltips until their cursor moved again).
+
+- 59489c2: Components passed to `tooltip()` and `legend()` now render under the `<SolidUplot>` component's owner, so `useContext` sees the app's providers (it returned `undefined` before). Plugin factories receive that owner as `ctx.owner`, for custom plugins that mount Solid UI: `runWithOwner(owner ?? null, () => render(() => <Ui />, u.over))`.
+- 17dd6a3: Public types and JSR entry points.
+
+  - `@dschz/solid-uplot` now exports `SolidUplotProps`, `SolidUplotOptions`, `SolidUplotPlugin`, `ChildrenPlacement`, `OnCreateMeta`, `OnCursorMoveParams` and `VoidStruct`. `SolidUplotPluginBus` is now a named type (`{ data, setData }`) instead of `ReturnType<typeof createPluginBus>`; the shape is unchanged.
+  - `@dschz/solid-uplot/plugins` adds `FocusSeriesPluginOptions`, `SeriesFocusTarget`, `TooltipPluginOptions`, `TooltipCursorPlacement`, `LegendPluginOptions` and `LegendPlacement`.
+  - `@dschz/solid-uplot/utils` adds `GetSeriesDataOptions`; `getCursorData` declares its return type (`CursorData | undefined`).
+  - JSR: the `./plugins` and `./utils` entry points are now published. Before, JSR exposed only the root entry.
+
+### Patch Changes
+
+- a2017c1: A newly created chart no longer gets `setData` and `setSize` calls repeating the data and size it was just created with, which saves a redundant redraw on every (re)creation.
+
 ## 0.5.2
 
 ### Patch Changes
