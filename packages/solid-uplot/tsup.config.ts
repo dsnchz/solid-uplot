@@ -40,9 +40,12 @@ export default defineConfig((config) => {
     preset.writePackageJson(packageFields);
   }
 
-  const tsupOptions = preset
-    .generateTsupOptions(parsedOptions)
-    .map((tsupOption) => ({ name: pkg.name, ...tsupOption }));
+  const tsupOptions = preset.generateTsupOptions(parsedOptions).map((tsupOption) => ({
+    name: pkg.name,
+    ...tsupOption,
+    // tsup's dts build always injects `baseUrl`, which TypeScript 6 deprecates (TS5101).
+    dts: tsupOption.dts && { compilerOptions: { ignoreDeprecations: "6.0" } },
+  }));
 
   return tsupOptions;
 });

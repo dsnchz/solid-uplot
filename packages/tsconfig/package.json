@@ -7,6 +7,6 @@
     "./solid.json": "./solid.json"
   },
   "devDependencies": {
-    "@tsconfig/strictest": "^2.0.8"
+    "@tsconfig/strictest": "2.0.9"
   }
 }
