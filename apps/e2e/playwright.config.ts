@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: "html",
 
   use: {
-    baseURL: "http://localhost:4000",
+    baseURL: "http://localhost:4100",
     trace: "on-first-retry",
   },
 
@@ -22,7 +22,7 @@ export default defineConfig({
 
   webServer: {
     command: "bun run dev",
-    url: "http://localhost:4000",
+    url: "http://localhost:4100",
     reuseExistingServer: !process.env["CI"],
   },
 });

@@ -5,7 +5,8 @@ import solidPlugin from "vite-plugin-solid";
 export default defineConfig({
   plugins: [tailwindcss(), solidPlugin()],
   server: {
-    port: 4000,
+    port: 4100,
+    strictPort: true,
   },
   build: {
     target: "esnext",
