@@ -6,6 +6,7 @@ import {
   createUniqueId,
   type JSX,
   mergeProps,
+  on,
   onCleanup,
   type ParentProps,
   type Ref,
@@ -255,10 +256,18 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
 
     local.onCreate?.(chart, { seriesData: getSeriesData(chart) });
 
-    createEffect(() => {
-      if (local.autoResize) return;
-      chart.setSize(size());
-    });
+    // The chart was just created with the current size and data, so the update effects
+    // defer their first run instead of re-sending those values.
+    createEffect(
+      on(
+        size,
+        (nextSize) => {
+          if (local.autoResize) return;
+          chart.setSize(nextSize);
+        },
+        { defer: true },
+      ),
+    );
 
     createEffect(() => {
       if (!local.autoResize) return;
@@ -289,9 +298,13 @@ export const SolidUplot = <T extends VoidStruct = VoidStruct>(
       });
     });
 
-    createEffect(() => {
-      chart.setData(updateableOptions.data as uPlot.AlignedData, updateableOptions.resetScales);
-    });
+    createEffect(
+      on(
+        () => [updateableOptions.data, updateableOptions.resetScales] as const,
+        ([data, resetScales]) => chart.setData(data as uPlot.AlignedData, resetScales),
+        { defer: true },
+      ),
+    );
 
     onCleanup(() => {
       chart.destroy();

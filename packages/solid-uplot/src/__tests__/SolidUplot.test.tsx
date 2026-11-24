@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import type { Component } from "solid-js";
 import { createSignal, For } from "solid-js";
 import uPlot from "uplot";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, type MockInstance, test, vi } from "vitest";
 
 import { createPluginBus } from "../createPluginBus";
 import { cursor, type CursorPluginMessageBus } from "../plugins/cursor";
@@ -119,6 +119,39 @@ describe("COMPONENT: <SolidUplot />", () => {
     expect(chartInstance!.height).toBe(400);
 
     expect(onCreateSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test("does not re-send the data and size a chart was created with", () => {
+    let setData: MockInstance<uPlot["setData"]> | undefined;
+    let setSize: MockInstance<uPlot["setSize"]> | undefined;
+    const [width, setWidth] = createSignal(400);
+    const [data, setChartData] = createSignal<uPlot.AlignedData>(DEFAULT_DATA);
+
+    render(() => (
+      <SolidUplot
+        {...DEFAULT_OPTIONS}
+        data={data()}
+        width={width()}
+        height={300}
+        onCreate={(chart) => {
+          setData = vi.spyOn(chart, "setData");
+          setSize = vi.spyOn(chart, "setSize");
+        }}
+      />
+    ));
+
+    expect(setData).not.toHaveBeenCalled();
+    expect(setSize).not.toHaveBeenCalled();
+
+    setWidth(500);
+    expect(setSize).toHaveBeenCalledExactlyOnceWith({ width: 500, height: 300 });
+
+    const nextData: uPlot.AlignedData = [
+      [1, 2],
+      [3, 4],
+    ];
+    setChartData(nextData);
+    expect(setData).toHaveBeenCalledExactlyOnceWith(nextData, true);
   });
 
   test("reactively updates the chart data when data changes", async () => {
