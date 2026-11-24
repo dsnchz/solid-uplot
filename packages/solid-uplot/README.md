@@ -83,9 +83,9 @@ import type {
 } from "@dschz/solid-uplot";
 ```
 
-**Cursor tracking is built in.** Cursor position is the core primitive every chart plugin builds on, so `SolidUplot` installs it on every chart, ahead of all other plugins. Every plugin — built in or your own — can read `bus.data.cursor` (see [Built-in Cursor Tracking](#built-in-cursor-tracking)). There is no plugin to add.
-
 ### `@dschz/solid-uplot/plugins`
+
+**Cursor tracking is built in.** Cursor position is the core primitive every chart plugin builds on, so `SolidUplot` installs it on every chart, ahead of all other plugins. Every plugin — built in or your own — can read `bus.data.cursor` (see [Built-in Cursor Tracking](#built-in-cursor-tracking)). There is no plugin to add; its message types (`CursorPluginMessage`, `CursorPluginMessageBus`) are exported from `@dschz/solid-uplot`.
 
 This export path provides three plugins:
 
