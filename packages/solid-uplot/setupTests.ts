@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import "@wessberg/pointer-events";
 
-import { Path2D } from "path2d";
+import { Path2D } from "@napi-rs/canvas";
 import { vi } from "vitest";
 
 window.matchMedia = (query: string) => ({
