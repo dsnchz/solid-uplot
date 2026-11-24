@@ -1,6 +1,6 @@
 {
   "name": "@dschz/solid-uplot",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "SolidJS wrapper for uPlot — ultra-fast, tiny time-series & charting library",
   "keywords": [
     "analytics",

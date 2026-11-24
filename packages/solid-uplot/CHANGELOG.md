@@ -1,5 +1,11 @@
 # @dschz/solid-uplot
 
+## 0.6.1
+
+### Patch Changes
+
+- 8ebad95: `VoidStruct` is no longer exported from `@dschz/solid-uplot`. It was only the generic constraint `Record<string, unknown>` and was exported by mistake in 0.6.0; write `Record<string, unknown>` if you constrained your own generics with it. The README's package-structure section now explains built-in cursor tracking under `@dschz/solid-uplot/plugins`.
+
 ## 0.6.0
 
 ### Minor Changes
